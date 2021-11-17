@@ -1,24 +1,30 @@
+% This example shows the value of valuation. Valuation ensured that the AE finds the successor relation, instead of settling for the exists relation.
 
 senses(s2(c_temp, obj_rock_on_floor, obj_number_0), 1).
-senses(s2(c_temp, obj_rock_on_floor, obj_number_5), 2).
+senses(s2(c_temp, obj_rock_on_floor, obj_number_1), 2).
 senses(s2(c_temp, obj_rock_on_floor, obj_number_2), 3).
-senses(s2(c_temp, obj_rock_on_floor, obj_number_1), 4).
-senses(s2(c_temp, obj_rock_on_floor, obj_number_2), 5).
-senses(s2(c_temp, obj_rock_on_floor, obj_number_8), 6).
-senses(s2(c_temp, obj_rock_on_floor, obj_number_9), 7).
+senses(s2(c_temp, obj_rock_on_floor, obj_number_3), 4).
+valuation(s2(c_temp, obj_rock_on_floor, obj_number_4), 5).
+valuation(s2(c_temp, obj_rock_on_floor, obj_number_5), 6).
+valuation(s2(c_temp, obj_rock_on_floor, obj_number_6), 7).
+
+
+% senses(s2(c_temp, obj_rock_on_floor, obj_number_2), 5).
+% senses(s2(c_temp, obj_rock_on_floor, obj_number_8), 6).
+% senses(s2(c_temp, obj_rock_on_floor, obj_number_9), 7).
 % senses(s2(c_temp, obj_rock_on_floor, obj_number_1), 8).
 % senses(s2(c_temp, obj_rock_on_floor, obj_number_2), 9).
 % senses(s2(c_temp, obj_rock_on_floor, obj_number_4), 10).
 % senses(s2(c_temp, obj_rock_on_floor, obj_number_5), 11).
 
 
-senses(s(c_cold, obj_rock_on_floor), 1).
-senses(s(c_hot, obj_rock_on_floor), 2).
-senses(s(c_cold, obj_rock_on_floor), 3).
-senses(s(c_cold, obj_rock_on_floor), 4).
-senses(s(c_cold, obj_rock_on_floor), 5).
-senses(s(c_hot, obj_rock_on_floor), 6).
-senses(s(c_hot, obj_rock_on_floor), 7).
+% senses(s(c_cold, obj_rock_on_floor), 1).
+% senses(s(c_hot, obj_rock_on_floor), 2).
+% senses(s(c_cold, obj_rock_on_floor), 3).
+% senses(s(c_cold, obj_rock_on_floor), 4).
+% senses(s(c_cold, obj_rock_on_floor), 5).
+% senses(s(c_hot, obj_rock_on_floor), 6).
+% senses(s(c_hot, obj_rock_on_floor), 7).
 
 % senses(s(c_cold, obj_rock_on_floor), 8).
 % senses(s(c_cold, obj_rock_on_floor), 9).
@@ -47,17 +53,17 @@ senses(s(c_hot, obj_rock_on_floor), 7).
 % Time
 is_time(1..8).
 
-:-	holds(s(c_cold, X), T),
-	holds(s(c_hot, X), T).
+% :-	holds(s(c_cold, X), T),
+% 	holds(s(c_hot, X), T).
 
-:- permanent(isa(t_rock, X)), is_time(T),
-	not has_temp(X,T).
+% :- permanent(isa(t_rock, X)), is_time(T),
+% 	not has_temp(X,T).
 
-has_temp(X,T) :- holds(s(c_cold, X), T).
-has_temp(X,T) :- holds(s(c_hot, X), T).
+% has_temp(X,T) :- holds(s(c_cold, X), T).
+% has_temp(X,T) :- holds(s(c_hot, X), T).
 
-incompossible(s(c_cold, X), s(c_hot, X)) :-
-	permanent(isa(t_rock, X)).
+% incompossible(s(c_cold, X), s(c_hot, X)) :-
+% 	permanent(isa(t_rock, X)).
 
 % % ∃! clause for temp : at most one
 :-	holds(s2(c_temp, X, Y), T),

@@ -101,18 +101,127 @@ holds(GC, T+1) :-
     ground_atom(VC, GC, Subs),
     is_time(T+1).
 
-% Substitution satisfies a single variable choice (for the application of this rule)
-% TODO: CHOICE MOET OOK PER TIJDSEENHEID WORDEN GEMAAKT (als ik naar rechts kijk, kijk ik naar een boom, maar kan elk moment een andere boom zijn)
- rule_choice(R, T, Subs) :-
-     rule_subs(R, Subs), is_time(T),
-     not diff_choice(R, T, Subs).
+% Substitution satisfies a single variable choice (for the application of this rule, per time)
+rule_choice(R, T, Subs) :-
+    rule_subs(R, Subs), is_time(T),
+    not diff_choice(R, T, Subs).
+
+% diff_choice(R, T, Subs1):-
+%     rule_choice(R, T, Subs2),
+%     rule_div3(R, Ground, Tochoose, _), 
+%     contains_var(Tochoose, V1), 
+%     subs(Subs1, V1, O1), subs(Subs2, V1, O2), O1 != O2,
+%     subs(Subs2, V2, O3) : contains_var(Ground, V2), subs(Subs1, V2, O3).
+
 
 diff_choice(R, T, Subs1):-
     rule_choice(R, T, Subs2),
-    rule_div3(R, Ground, Tochoose, _), 
-    contains_var(Tochoose, V1), 
-    subs(Subs1, V1, O1), subs(Subs2, V1, O2), O1 != O2,
-    O3 == O4 : contains_var(Ground, V2), subs(Subs1, V2, O3), subs(Subs2, V2, O4).
+    rule_tochoose(R,V1), subs(Subs1, V1, O1), subs(Subs2, V1, O2), O1 != O2,
+    subs(Subs1, V2, O3) : rule_ground(R,V2), subs(Subs2, V, O3).
+
+
+
+%IS DEZE LINE HIERBOVEN WEL GOED?
+    % O3 == O4 : contains_var(Ground, V2), subs(Subs1, V2, O3), subs(Subs2, V2, O4).
+
+
+%% HIERONDER GA IK PROBEREN ZEKERHEID OP VALUATION ATOMS TE BEVORDEREN
+
+possible_predictions(GA, T, 1) :-
+    valuation(GA, T),
+    rule_arrow_head(R, VA),
+    ground_atom(VA, GA, Subs),
+    eval_body(R, Subs, T).
+
+possible_predictions(GC, T, 1) :-
+    valuation(GC, T),
+    rule_head_causes(R, VC),
+    ground_atom(VC, GC, Subs),
+    eval_body(R, Subs, T-1).
+
+
+% number_of_choices(R, C) :- is_causal_judgement(R), use_rule(R), rule_div3(R, _, Tochoose, _), C = #sum { 1,S : subs_group(Tochoose, S)}.
+
+% If the head follows from a rule where no choice must be made, or a rule where a choice between one thing must be made,
+% in both cases the number of choices is 1
+% number_of_choices(R, C) :-
+%     is_causal_judgement(R),
+%     use_rule(R),
+%     rule_div3(R, _, Tochoose, _),
+%     C = #count { S : subs_group(Tochoose, S)}, C > 1.
+
+
+% number_of_choices(R, 1) :-
+%     is_causal_judgement(R),
+%     use_rule(R),
+%     not number_of_choices(R, _).
+
+%% VAMNAF HIER EXPERIMENT
+
+singleton_group(V, VG) :- 
+    use_rule(R), rule_tochoose(R,V),
+    contains_var(VG, V), not contains_different_var(VG, V).
+
+contains_different_var(VG, V) :- contains_var(VG, V), contains_var(VG, V2), V != V2.
+
+
+number_of_choices_for_var(V, C) :-
+    is_causal_judgement(R), use_rule(R), rule_tochoose(R,V),
+    singleton_group(V, VG),
+    C = #count { S : subs_group(VG, S)}.
+
+number_of_choose_vars(R, C) :-
+    is_causal_judgement(R), use_rule(R),
+    C = #count { V : rule_tochoose(R, V)}.
+
+
+1{variable_order_for_rule (R, V, 1) : rule_tochoose(R,V)}1 :- is_causal_judgement(R), use_rule(R), number_of_choose_vars(R,C), C > 0.
+1{variable_order_for_rule (R, V, I+1) : rule_tochoose(R,V)}1 :- variable_order_for_rule(R, _, I), I < C, number_of_choose_vars(R,C).
+
+
+
+% is_causal_judgement(R), use_rule(R), number_of_choose_vars(R,C), C > 0.
+
+
+
+% {variable_order_for_rule(R, V, I)} :-
+%     is_causal_judgement(R), use_rule(R), number_of_choose_vars(R, C),
+%     rule_tochoose(R, V), I > 0, I <= C.
+
+% :- is_causal_judgement(R), use_rule(R), rule_tochoose(R,V), not variable_order_for_rule(R,V,_).
+
+:- variable_order_for_rule(R,V,I1), variable_order_for_rule(R,V,I2), I1 != I2.
+
+
+number_of_rule_choices(R, 0, 1) :- is_causal_judgement(R), use_rule(R).
+number_of_rule_choices(R, I, X) :-
+    number_of_rule_choices(R, I-1, Y), variable_order_for_rule(R,V,I),
+    number_of_choices_for_var(V, N), X = Y*N.
+
+number_of_choices(R, I) :- number_of_rule_choices(R, C, I), number_of_choose_vars(R, C).
+
+% HIER STOPT EXPERIMENT
+
+% When a valuation atom is not predicted, but COULD HAVE been predicted using non-deterministic choice. We record the relevant domain size.
+possible_predictions(GC, T, C) :-
+    valuation(GC, T),
+    causal_judgement_head(R, VC),
+    ground_atom(VC, GC, Subs),
+    eval_causal_judgement_body(R, Subs, T-1), 
+    rule_subs(R,S), number_of_choices(R,C).
+
+
+
+minimum_number_of_choices(GA, T, C) :-
+    valuation(GA, T), C = #min { P : possible_predictions(GA, T, P)}.
+
+% new_minimum_number_of_choices(GA, T, C) :- minimum_number_of_choices(GA, T, C).
+
+% #minimize { C @ 3, GA, T : minimum_number_of_choices(GA,T,C)}.
+
+
+% Valuation atoms should be at least possible to predict:
+:- valuation(GC, T), not possible_predictions(GC, T, _).
 
 
 

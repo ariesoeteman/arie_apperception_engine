@@ -10,7 +10,9 @@ causal_judgement_templates = [
     ("nocausal_judgement_1.lp", ("data/causal_judgement", template_nocausal_judgement_1_1, "causal_judgement_1.lp")),
     ("causal_judgement_2.lp", ("data/causal_judgement", template_causal_judgement_2_1, "causal_judgement_2.lp")),
     ("nocausal_judgement_2.lp", ("data/causal_judgement", template_nocausal_judgement_2_1, "causal_judgement_2.lp")),
-    ("heating_1.lp", ("data/causal_judgement", template_heating_1_1, "heating_1.lp"))
+    ("heating_1.lp", ("data/causal_judgement", template_heating_1, "heating_1.lp")),
+    ("heating_2.lp", ("data/causal_judgement", template_heating_2, "heating_2.lp")),
+    ("heating_3.lp", ("data/causal_judgement", template_heating_3, "heating_3.lp"))
    ]
 
 -- eerste is input-argument 'lookup-file'
@@ -37,8 +39,8 @@ misc_templates = [
     ]
 
 -- WAAR KOMT 'GIVEN' precies stoer doen?
-frame_heating_1_1 :: Frame    
-frame_heating_1_1 = Frame {
+frame_heating_1 :: Frame    
+frame_heating_1 = Frame {
     types = [T "rock", T "number"],
     type_hierarchy = [],
     objects = [
@@ -82,10 +84,10 @@ frame_heating_1_1 = Frame {
     aux_files = ["numbers.lp"]
 }
 
-template_heating_1_1 :: Template
-template_heating_1_1 = Template {
+template_heating_1 :: Template
+template_heating_1 = Template {
     dir = "causal_judgement",
-    frame = frame_heating_1_1,
+    frame = frame_heating_1,
     min_body_atoms = 0,
     max_body_atoms = 3, 
     num_arrow_rules = 2,
@@ -93,6 +95,135 @@ template_heating_1_1 = Template {
     num_visual_predicates = Nothing,
     use_noise = False,
     num_causal_judgements = 1
+    }    
+
+
+
+frame_heating_2 :: Frame    
+frame_heating_2 = Frame {
+    types = [T "rock", T "number"],
+    type_hierarchy = [],
+    objects = [
+        (O "rock_on_floor", T "rock"),
+        (O "number_0", T "number"),
+        (O "number_1", T "number"),
+        (O "number_2", T "number"),
+        (O "number_3", T "number"),
+        (O "number_4", T "number"),
+        (O "number_5", T "number"),
+        (O "number_6", T "number"),
+        (O "number_7", T "number"),
+        (O "number_8", T "number"),
+        (O "number_9", T "number")
+        ],
+    exogeneous_objects = [],
+    permanent_concepts = [
+        (P "first_number", Given, [T "number"]),
+        (P "succ", Given, [T "number", T "number"]),
+        (P "less", Given, [T "number", T "number"])],
+    fluid_concepts = [
+        (C "hot", [T "rock"]), 
+        (C "cold", [T "rock"]),
+        (C "temp", [T "rock", T "number"]),
+        (C "treshold", [T "number"])
+        ],
+    input_concepts = [C "hot", C "cold", C "temp", C "treshold"],
+    static_concepts = [],
+    vars = [
+        (V "x", T "rock"),
+        (V "y", T "number"),
+        (V "z", T "number")
+        ],
+    var_groups = [
+        [V "x", V "y", V "z"], 
+        [V "x", V "y"],
+        [V "x", V "z"],
+        [V "y", V "z"],
+        [V "x"],
+        [V "y"],
+        [V "z"]
+        ],
+    aux_files = ["numbers.lp"]
+}
+
+template_heating_2 :: Template
+template_heating_2 = Template {
+    dir = "causal_judgement",
+    frame = frame_heating_2,
+    min_body_atoms = 0,
+    max_body_atoms = 3, 
+    num_arrow_rules = 2,
+    num_causes_rules = 2,
+    num_visual_predicates = Nothing,
+    use_noise = False,
+    num_causal_judgements = 2
+    }    
+
+
+frame_heating_3 :: Frame    
+frame_heating_3 = Frame {
+    types = [T "rock", T "number"],
+    type_hierarchy = [],
+    objects = [
+        (O "rock_on_floor", T "rock"),
+        (O "number_0", T "number"),
+        (O "number_1", T "number"),
+        (O "number_2", T "number"),
+        (O "number_3", T "number"),
+        (O "number_4", T "number"),
+        (O "number_5", T "number"),
+        (O "number_6", T "number"),
+        (O "number_7", T "number"),
+        (O "number_8", T "number"),
+        (O "number_9", T "number")
+        ],
+    exogeneous_objects = [],
+    permanent_concepts = [
+        (P "first_number", Given, [T "number"]),
+        (P "succ", Given, [T "number", T "number"]),
+        (P "less", Given, [T "number", T "number"])],
+    fluid_concepts = [
+        -- (C "hot", [T "rock"]), 
+        -- (C "cold", [T "rock"]),
+        (C "p", [T "rock"]), 
+        (C "q", [T "rock"]),
+        (C "r", [T "rock"]),
+        (C "temp", [T "rock", T "number"]),
+        -- (C "treshold", [T "number"]),
+        (C "shinedon", [T "rock"]),
+        (C "notshinedon", [T "rock"])
+        ],
+    -- input_concepts = [C "hot", C "cold", C "temp", C "treshold", C "shinedon", C "notshinedon"],
+    -- input_concepts = [C "temp", C "shinedon", C "notshinedon"],
+    input_concepts = [C "shinedon", C "notshinedon", C "temp"],
+    static_concepts = [],
+    vars = [
+        (V "x", T "rock"),
+        (V "y", T "number"),
+        (V "z", T "number")
+        -- (V "s", T "shiner")
+        ],
+    var_groups = [
+        [V "x", V "y", V "z"], 
+        [V "y", V "z"],
+        [V "x", V "y"],
+        [V "x"],
+        [V "y"]
+        ],
+    aux_files = ["numbers.lp"]
+}
+
+template_heating_3 :: Template
+template_heating_3 = Template {
+    dir = "causal_judgement",
+    frame = frame_heating_3,
+    min_body_atoms = 0,
+    max_body_atoms = 3, 
+    num_arrow_rules = 2,
+    num_causes_rules = 2,
+    num_visual_predicates = Nothing,
+    use_noise = False,
+    num_causal_judgements = 2
     }    
 
 
@@ -571,6 +702,7 @@ frame_misc_4_mislabel = Frame {
     aux_files = []
 }
 
+-- Changed 'use noise' to false here. Otherwise Kantian condition 'blind sense' is not applied
 template_misc_4_mislabel :: Template
 template_misc_4_mislabel = Template {
     dir = "misc",
@@ -580,7 +712,7 @@ template_misc_4_mislabel = Template {
     num_arrow_rules = 3,
     num_causes_rules = 3,
     num_visual_predicates = Nothing,
-    use_noise = True,
+    use_noise = False,
     num_causal_judgements = 3
     }   
 

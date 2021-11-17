@@ -346,12 +346,14 @@ gen_causal_judgements t n = h ++ cs ++ causjudg ++ uses ++ [""] where
     max_bs = show (max_body_atoms t)
     cs = [
         "1 { rule_var_group(R, VG) : is_var_group(VG) } 1 :- is_causal_judgement(R), use_rule(R).",
-        "",
-        "1 { rule_div3(R, X, Y, Z) : vargroup_div3(VG, X, Y, Z)} 1 :- is_causal_judgement(R), rule_var_group(R, VG).",
+        -- "",
+        -- "1 { rule_div3(R, X, Y, Z) : vargroup_div3(VG, X, Y, Z) } 1 :- is_causal_judgement(R), rule_var_group(R, VG).",
         "",
         min_bs ++ " { causal_judgement_body(R, VA) : is_var_atom(VA) } " ++ max_bs ++ " :- is_causal_judgement(R), use_rule(R).", 
         "",
         "1 { causal_judgement_head(R, VA) : cause_head(VA) } 1 :- is_causal_judgement(R), use_rule(R).",
+        "",
+        "1 { rule_ground(R,V); rule_tochoose(R,V); rule_independent(R,V) } 1 :- is_causal_judgement(R), use_rule(R), rule_var_group(R,VG), contains_var(VG,V).",
         ""
         ]
     causjudg = [ fa i | i <- [n .. n + num_causal_judgements t - 1]]
@@ -438,24 +440,29 @@ gen_subs name t = do
     Monad.forM_ (vars frm) $ \(v, t) -> do
         appendFile f $ "var_type(" ++ show v ++ ", " ++ show t ++ ").\n"
     appendFile f "\n\n"
-    appendFile f ("%--------------\n")
-    appendFile f ("% vargroup division in 3\n")
-    appendFile f ("%--------------\n")
-    appendFile f "\n"
-    Monad.forM_ (var_groups frm) $ \vg -> do
-        let n = var_group_name vg
-        Monad.forM_ (my_divide_into_3groups vg) $ \(div1, div2, div3) -> do
-            let n1 = var_group_name div1
-            let n2 = var_group_name div2
-            let n3 = var_group_name div3
-            appendFile f ("vargroup_div3(var_group_" ++ n ++ ", var_group_" ++ n1 ++ ", var_group_" ++ n2 ++ ", var_group_" ++ n3 ++").\n")
-        appendFile f "\n"
-    appendFile f "\n\n"
+    -- appendFile f ("%--------------\n")
+    -- appendFile f ("% vargroup division in 3\n")
+    -- appendFile f ("%--------------\n")
+    -- appendFile f "\n"
+    -- Monad.forM_ (var_groups frm) $ \vg -> do
+    --     let n = var_group_name vg
+    --     Monad.forM_ (my_divide_into_3groups vg) $ \(div1, div2, div3) -> do
+    --         let n1 = var_group_name div1
+    --         let n2 = var_group_name div2
+    --         let n3 = var_group_name div3
+    --         appendFile f ("vargroup_div3(var_group_" ++ n ++ ", var_group_" ++ n1 ++ ", var_group_" ++ n2 ++ ", var_group_" ++ n3 ++").\n")
+    --     appendFile f "\n"
+    -- appendFile f "\n\n"
     appendFile f ("%--------------\n")
     appendFile f ("% contains_var\n")
     appendFile f ("%--------------\n")
     appendFile f "\n"
-    Monad.forM_ (var_subgroups frm) $ \vg -> do
+    Monad.forM_ (var_groups frm) $ \vg -> do
+        let n = var_group_name vg
+        Monad.forM_ vg $ \v -> do
+            appendFile f ("contains_var(var_group_" ++ n ++ ", " ++ show v ++ ").\n")
+        appendFile f "\n"
+    Monad.forM_ (non_group_singleton_vars frm) $ \vg -> do
         let n = var_group_name vg
         Monad.forM_ vg $ \v -> do
             appendFile f ("contains_var(var_group_" ++ n ++ ", " ++ show v ++ ").\n")
@@ -628,13 +635,24 @@ type SubTypes = [(Type, Type)]
 type Objects = [(Object, Type)]
 
 
+-- ADDED ALL SINGLETON SUBSTITUTIONS HERE
 all_subs :: Template -> [SubsGroup]
-all_subs t = res where
+all_subs t = res ++ singleton_subs where
+    singleton_subs = zip (map var_group_name (single_vars)) (map f single_vgs)
+    single_vars = non_group_singleton_vars frm
+    single_vgs = map (make_var_group (vars frm)) (single_vars)
     res = zip (map var_group_name (var_groups frm)) (map f vgs)
     vgs = map (make_var_group (vars frm)) (var_groups frm)
     f vars = gen2 (get_objects t) sub_types' vars
     sub_types' = fixed_point trans (sub_types frm)
     frm = frame t
+
+non_group_singleton_vars :: Frame -> [Vars]
+non_group_singleton_vars frm = filter f singleton_vars where
+    f [v] = not ([v] `elem` var_groups frm)
+    singleton_vars = map g (vars frm)
+    g (v,t) = [v]
+
 
 -- lookup geeft de rest van tuple (als maybe)
 -- Deze functie zoeked de variabelen uit Vars op en stopt de bijbehorende (Var, Type) tuples in de group
@@ -696,6 +714,17 @@ my_divide_into_3groups2 (x:xs) acc = acc1 ++ acc2 ++ acc3 where
     acc1 = my_divide_into_3groups2 xs (insert_first x acc)
     acc2 = my_divide_into_3groups2 xs (insert_second x acc)
     acc3 = my_divide_into_3groups2 xs (insert_third x acc)
+
+
+-- DEZE HEB IK NOG NIET GESUBSTITUEERD VOOR DE FUNCTIE VAN RICHARD
+-- my_divide_into_groups :: Ord a => [a] -> [[a]]
+-- my_divide_into_groups xs = List.nub $ my_divide_into_groups2 xs
+
+
+-- my_divide_into_groups2 :: Ord a => [a] -> [[a]]
+-- my_divide_into_groups2 [] = [[]]
+-- my_divide_into_groups2 (x:xs) = (my_divide_into_groups2 xs) ++ map (x:) (my_divide_into_groups2 xs)
+
 
 insert_first :: Ord a => a -> [([a],[a],[a])] -> [([a],[a],[a])]
 insert_first x acc = map f acc where
@@ -1249,13 +1278,23 @@ extract_causal_judgement_body xs r = Maybe.mapMaybe f xs where
 
 
 -- NOTE I HARDCODED THAT I ONLY SELECT FIRST 'rule_div3' WITH THE RIGHT ID... NOT VERY ROBUST
+-- extract_choose_vars :: [String] -> RuleID -> String
+-- extract_choose_vars xs r = List.head list where
+--     list = Maybe.mapMaybe f xs
+--     p = "rule_div3("++ r ++ ","
+--     f x = case List.isPrefixOf p x of
+--         False -> Nothing
+--         True -> Just $ select_third_vargroup (drop_last (List.drop (length p) x))
+
+-- NIEUW EXPERIMENT ZONDER DIV3
 extract_choose_vars :: [String] -> RuleID -> String
-extract_choose_vars xs r = List.head list where
+extract_choose_vars xs r = List.concat list where
     list = Maybe.mapMaybe f xs
-    p = "rule_div3("++ r ++ ","
+    p = "rule_tochoose("++ r ++ ",var_"
     f x = case List.isPrefixOf p x of
         False -> Nothing
-        True -> Just $ select_third_vargroup (drop_last (List.drop (length p) x))
+        True -> Just $ " " ++ drop_last (List.drop (length p) x) ++ " "
+
 
 
 select_third_vargroup :: String -> String
@@ -1386,13 +1425,25 @@ causes_string = if flag_unicode then " ▸ " else " >> "
 xor_string :: String
 xor_string = if flag_unicode then " ⊕ " else " + " 
 
+-- write_exist :: String -> String
+-- write_exist choose = f choose where
+--     f x = case x == p of
+--         True -> ""
+--         False -> exists_string ++ " " ++ drop (length p) choose ++ "  "
+--     p = "var_group_"
+
+
 write_exist :: String -> String
 write_exist choose = f choose where
-    f x = case x == p of
+    f x = case x == "" of
         True -> ""
-        False -> exists_string ++ " " ++ drop (length p) choose ++ "  "
-    p = "var_group_"
+        False -> exists_string ++ x
 
+    --     " " ++ drop (length p) choose ++ "  "
+    -- p = "var_group_"
+
+
+-- HIER 'write_exist' vervangen voor gewoon de string.
 instance Show Rule where
     show (Arrow r bs h) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ arrow_string ++ h
     show (Causes r bs c) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ causes_string ++ c

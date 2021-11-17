@@ -18,13 +18,22 @@
 
 %% ADDED BY ME
 
-:~ causal_judgement_body(R, A). [1 @ 1, R, A]
+:~ causal_judgement_body(R, A). [1 @ 2, R, A]
 
 :~ causal_judgement_head(R, A). [1 @ 2, R, A]
 
+% :~ causal_judgement_body(R, A). [1 @ 2, R, A]
+
 :~ causal_judgement_head(R, A). [1 @ 1, R, A]
 
+% :~ incorrect_valuation(R, A). [1 @ 2, R, A]
 
+% :~ minimum_number_of_choices(GA, T, C). [C @ 3, GA, T]
+
+% sum_choice_domains(S) :- S = #sum { C, GA, T : minimum_number_of_choices(GA, T, C)}.
+
+#minimize {C @ 3, GA, T : minimum_number_of_choices(GA, T, C), C != #sup}.
+% #show minimum_number_of_choices/3.
 
 %------------------------------------------------------------------------------
 % Forcing atoms to be true is the same cost as initial atoms.

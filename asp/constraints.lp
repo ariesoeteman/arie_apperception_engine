@@ -111,26 +111,52 @@ violation(undefined_var(R, V)) :-
 
 % Choice grounds and To choose should always be in the rule, independent can also be in the group while not being in the rule
 
+% violation(ground_notin_head(R, V)) :-
+%     rule_div3(R, Ground, _, _),
+%     contains_var(Ground, V),
+%     not var_in_caus_judg_head(V, R).
+
+% violation(tochoose_notin_head(R, V)) :-
+%     rule_div3(R, _, Tochoose, _),
+%     contains_var(Tochoose, V),
+%     not var_in_caus_judg_head(V, R).
+
+% violation(tochoose_in_body(R,V)) :-
+%     rule_div3(R, _, Tochoose, _),
+%     contains_var(Tochoose, V),
+%     var_in_caus_judg_body(V, R).
+
+
+% violation(independent_in_head(R,V)) :-
+%     rule_div3(R, _, _, Independent),
+%     contains_var(Independent, V),
+%     var_in_caus_judg_head(V, R).
+
+
+
+% NEW APPROACH WITHOUT DIV3
+
+% Choice-ground should always be in the head. Additional constraints ensures it is then also in the body
 violation(ground_notin_head(R, V)) :-
-    rule_div3(R, Ground, _, _),
-    contains_var(Ground, V),
+    rule_ground(R, V),
     not var_in_caus_judg_head(V, R).
 
+% Variable to choose should be ONLY in the head
 violation(tochoose_notin_head(R, V)) :-
-    rule_div3(R, _, Tochoose, _),
-    contains_var(Tochoose, V),
+    rule_tochoose(R, V),
     not var_in_caus_judg_head(V, R).
 
 violation(tochoose_in_body(R,V)) :-
-    rule_div3(R, _, Tochoose, _),
-    contains_var(Tochoose, V),
+    rule_tochoose(R, V),
     var_in_caus_judg_body(V, R).
 
-
+% Independent variable can only be in the body
 violation(independent_in_head(R,V)) :-
-    rule_div3(R, _, _, Independent),
-    contains_var(Independent, V),
+    rule_independent(R, V),
     var_in_caus_judg_head(V, R).
+
+
+
 
 % Niet nodig, want als in rule en niet in body zit je al in head
 % violation(independent()) :-
@@ -180,6 +206,13 @@ incorrect :-
     not holds(A, T).
 
 correct :- not incorrect.
+
+% ADDED BY ME
+
+% incorrect_valuation(A,T) :-
+%     valuation(A, T),
+%     not holds(A, T).
+
 
 %------------------------------------------------------------------------------
 % Correctness of held-outs for pixel arrays
@@ -273,20 +306,35 @@ is_held_out_time_step(T) :-
 % My addition: For causal judgements, rule is unsafe if a variable appears in head, not in body, and is not 'chosen'
 
 
+% :-  causal_judgement_head(R, s(_, V)),
+%     rule_div3(R, _, Tochoose, _),
+%     not var_in_caus_judg_body(V, R),
+%     not contains_var(Tochoose, V).
+
+% :-  causal_judgement_head(R, s2(_, V, _)),
+%     rule_div3(R, _, Tochoose, _),
+%     not var_in_caus_judg_body(V, R),
+%     not contains_var(Tochoose, V).
+
+% :-  causal_judgement_head(R, s2(_, _, V)),
+%     rule_div3(R, _, Tochoose, _),
+%     not var_in_caus_judg_body(V, R),
+%     not contains_var(Tochoose, V).
+
+
+% NEW FORMULATION WITHOUT DIV3 APPROACH
+
 :-  causal_judgement_head(R, s(_, V)),
-    rule_div3(R, _, Tochoose, _),
-    not var_in_caus_judg_body(V, R),
-    not contains_var(Tochoose, V).
+    not rule_tochoose(R,V),
+    not var_in_caus_judg_body(V, R).
 
 :-  causal_judgement_head(R, s2(_, V, _)),
-    rule_div3(R, _, Tochoose, _),
-    not var_in_caus_judg_body(V, R),
-    not contains_var(Tochoose, V).
+    not rule_tochoose(R,V),
+    not var_in_caus_judg_body(V, R).
 
 :-  causal_judgement_head(R, s2(_, _, V)),
-    rule_div3(R, _, Tochoose, _),
-    not var_in_caus_judg_body(V, R),
-    not contains_var(Tochoose, V).
+    not rule_tochoose(R,V),
+    not var_in_caus_judg_body(V, R).
 
 
 %------------------------------------------------------------------------------

@@ -50,7 +50,9 @@ permanent(isa2(p_less, X, Y)) :-
 % permanent(isa3(p_plus(Y,X,Z))) :- permanent(isa3(p_plus,X,Y,Z)).
 % permanent(isa3(p_plus(obj_number_0, X, X))).
 
-% permanent(isa2(p_succ(Z,Z1:))) :- permanent(isa3(p_plus(X1,Y,Z1))), permanent(isa2(p_succ(X, X1))), permanent(isa3(p_plus(X,Y,Z))).
+% permanent(isa2(p_succ(Z,Z1))) :- permanent(isa3(p_plus(X1,Y,Z1))), permanent(isa2(p_succ(X, X1))), permanent(isa3(p_plus(X,Y,Z))).
+
+
 % permanent(isa2(p_succ(X,X1))) :- permanent(isa3(p_plus(X1,Y,Z1))), permanent(isa3(p_plus(X,Y,Z))), permanent(isa2(p_succ(Z,Z1))).
 % permanent(isa3(p_plus(X1,Y,Z1))) :- permanent(isa2(p_succ(Z,Z1:))), permanent(isa2(p_succ(X, X1))), permanent(isa3(p_plus(X,Y,Z))).
 % permanent(isa3(p_plus(X,Y,Z)))) :- permanent(isa3(p_plus(X1,Y,Z1))), permanent(isa2(p_succ(X,X1))), permanent(isa2(p_succ(Z,Z1))).
