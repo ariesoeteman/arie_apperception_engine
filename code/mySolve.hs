@@ -50,6 +50,7 @@ main = do
         ["seq-mnist", f] -> solve_seq_mnist_iteratively f 1        
         ["house", f] -> solve_house f
         ["cj", f] -> solve_causal_judgement f
+        -- ["figurative-synthesis"] solve_figurative_synthesis f
         _ -> putStrLn $ "Usage: solve sw/eca/music/rhythm/misc <file>"
 
 
@@ -62,12 +63,6 @@ solve_misc f = case lookup f misc_templates of
     Nothing -> error $ "No misc template with this id: " ++ f
     Just (dir, template, input) -> do process_misc dir template input
 
-solve_causal_judgement :: String -> IO ()
-solve_causal_judgement f = case lookup f causal_judgement_templates of
-    Nothing -> error $ "No causal template with this id: " ++ f
-    Just (dir, template, input) -> do process_misc dir template input
-
-
 process_misc :: String -> Template -> String -> IO ()
 process_misc dir t input_f = do
     (results_f, ls2) <- do_solve dir input_f t
@@ -79,6 +74,22 @@ process_misc dir t input_f = do
             Monad.forM_ ans (write_latex t)
             let ls3 = map (process_answer_with_template t) ans
             Monad.forM_ ls3 putStrLn
+
+
+
+-------------------------------------------------------------------------------
+-- Causal Judgement and Figurative Synthesis-specific solving
+-------------------------------------------------------------------------------
+
+solve_causal_judgement :: String -> IO ()
+solve_causal_judgement f = case lookup f extension_templates of
+    Nothing -> error $ "No causal template with this id: " ++ f
+    Just (dir, template, input) -> do process_misc dir template input
+
+-- solve_figurative_synthesis :: String -> IO ()
+-- solve_figurative_synthesis f = case lookup f extension_templates of
+--     Nothing -> error $ "No figurative synthesis template with this id: " ++ f
+--     Just (dir, template, input) -> do process_misc dir template input
 
 -------------------------------------------------------------------------------
 -- Sokoban-specific solving

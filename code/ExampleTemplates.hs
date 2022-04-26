@@ -4,15 +4,17 @@ import Interpretation
 import SolveTemplates
     
 -------------------------------------- Templates ------------------------------
-causal_judgement_templates :: [(String, (String, Template, String))]
-causal_judgement_templates = [
+extension_templates :: [(String, (String, Template, String))]
+extension_templates = [
     ("causal_judgement_1.lp", ("data/causal_judgement", template_causal_judgement_1_1, "causal_judgement_1.lp")),
     ("nocausal_judgement_1.lp", ("data/causal_judgement", template_nocausal_judgement_1_1, "causal_judgement_1.lp")),
     ("causal_judgement_2.lp", ("data/causal_judgement", template_causal_judgement_2_1, "causal_judgement_2.lp")),
     ("nocausal_judgement_2.lp", ("data/causal_judgement", template_nocausal_judgement_2_1, "causal_judgement_2.lp")),
     ("heating_1.lp", ("data/causal_judgement", template_heating_1, "heating_1.lp")),
     ("heating_2.lp", ("data/causal_judgement", template_heating_2, "heating_2.lp")),
-    ("heating_3.lp", ("data/causal_judgement", template_heating_3, "heating_3.lp"))
+    ("heating_3.lp", ("data/causal_judgement", template_heating_3, "heating_3.lp")),
+    ("conjunction_1.lp", ("data/causal_judgement", template_conjunction_1, "conjunction_1.lp"))
+    -- ("figurative_synthesis_1.lp", ("data/figurative_synthesis", template_figurative_synthesis_1, "figurative_synthesis_1.lp"))
    ]
 
 -- eerste is input-argument 'lookup-file'
@@ -38,6 +40,47 @@ misc_templates = [
     ("second_last_2.lp", ("data/misc", template_second_last_2, "second_last_2.lp"))
     ]
 
+
+frame_conjunction_1 :: Frame    
+frame_conjunction_1 = Frame {
+    types = [T "light"],
+    type_hierarchy = [],
+    objects = [
+        (O "sensor_a", T "light")
+        ],
+    exogeneous_objects = [],
+    permanent_concepts = [],
+    fluid_concepts = [
+        (C "on", [T "light"]), 
+        (C "off", [T "light"]),
+        (C "black", [T "light"]), 
+        (C "green", [T "light"])
+        ],
+    input_concepts = [C "on", C "off", C "black", C "green"],
+    static_concepts = [],
+    vars = [
+        (V "x", T "light")
+        ],
+    var_groups = [
+        [V "x"]
+        ],
+    aux_files = []
+}
+
+template_conjunction_1 :: Template
+template_conjunction_1 = Template {
+    dir = "causal_judgement",
+    frame = frame_conjunction_1,
+    min_body_atoms = 0,
+    max_body_atoms = 3, 
+    num_arrow_rules = 2,
+    num_causes_rules = 2,
+    num_visual_predicates = Nothing,
+    use_noise = False,
+    num_causal_judgements = 2,
+    max_head_atoms = 2
+    }    
+
 -- WAAR KOMT 'GIVEN' precies stoer doen?
 frame_heating_1 :: Frame    
 frame_heating_1 = Frame {
@@ -62,24 +105,30 @@ frame_heating_1 = Frame {
         (P "succ", Given, [T "number", T "number"]),
         (P "less", Given, [T "number", T "number"])],
     fluid_concepts = [
-        (C "hot", [T "rock"]), 
-        (C "cold", [T "rock"]),
+        -- (C "hot", [T "rock"]), 
+        -- (C "cold", [T "rock"]),
         (C "temp", [T "rock", T "number"]),
-        (C "treshold", [T "number"])
+        (C "treshold", [T "number"]),
+        (C "shinedon", [T "rock"]),
+        (C "notshinedon", [T "rock"])
         ],
-    input_concepts = [C "hot", C "cold", C "temp", C "treshold"],
+    input_concepts = [C "temp", C "treshold", C "shinedon", C "notshinedon"],
     static_concepts = [],
     vars = [
         (V "x", T "rock"),
         (V "y", T "number"),
-        (V "z", T "number")
+        (V "z", T "number"),
+        (V "w", T "number")
         ],
     var_groups = [
         [V "x", V "y", V "z"], 
         [V "x", V "y"],
-        [V "y", V "z"],
+        -- [V "y", V "z"],
+        -- [V "x", V "z"],
+        -- [V "w", V "z"]
         [V "x"],
         [V "y"]
+        -- [V "w"]
         ],
     aux_files = ["numbers.lp"]
 }
@@ -89,12 +138,13 @@ template_heating_1 = Template {
     dir = "causal_judgement",
     frame = frame_heating_1,
     min_body_atoms = 0,
-    max_body_atoms = 3, 
-    num_arrow_rules = 2,
+    max_body_atoms = 2, 
+    num_arrow_rules = 0,
     num_causes_rules = 0,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 1
+    num_causal_judgements = 4,
+    max_head_atoms = 2
     }    
 
 
@@ -152,11 +202,12 @@ template_heating_2 = Template {
     frame = frame_heating_2,
     min_body_atoms = 0,
     max_body_atoms = 3, 
-    num_arrow_rules = 2,
-    num_causes_rules = 2,
+    num_arrow_rules = 0,
+    num_causes_rules = 0,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 2
+    num_causal_judgements = 1,
+    max_head_atoms = 2
     }    
 
 
@@ -172,10 +223,10 @@ frame_heating_3 = Frame {
         (O "number_3", T "number"),
         (O "number_4", T "number"),
         (O "number_5", T "number"),
-        (O "number_6", T "number"),
-        (O "number_7", T "number"),
-        (O "number_8", T "number"),
-        (O "number_9", T "number")
+        (O "number_6", T "number")
+        -- (O "number_7", T "number"),
+        -- (O "number_8", T "number"),
+        -- (O "number_9", T "number")
         ],
     exogeneous_objects = [],
     permanent_concepts = [
@@ -185,9 +236,9 @@ frame_heating_3 = Frame {
     fluid_concepts = [
         -- (C "hot", [T "rock"]), 
         -- (C "cold", [T "rock"]),
-        (C "p", [T "rock"]), 
-        (C "q", [T "rock"]),
-        (C "r", [T "rock"]),
+        -- (C "p", [T "rock"]), 
+        -- (C "q", [T "rock"]),
+        -- (C "r", [T "rock"]),
         (C "temp", [T "rock", T "number"]),
         -- (C "treshold", [T "number"]),
         (C "shinedon", [T "rock"]),
@@ -218,13 +269,16 @@ template_heating_3 = Template {
     dir = "causal_judgement",
     frame = frame_heating_3,
     min_body_atoms = 0,
-    max_body_atoms = 3, 
+    max_body_atoms = 2, 
     num_arrow_rules = 2,
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 2
-    }    
+    num_causal_judgements = 2,
+    max_head_atoms = 2
+    }
+
+
 
 
 frame_causal_judgement_1_1 :: Frame    
@@ -268,7 +322,8 @@ template_causal_judgement_1_1 = Template {
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 3
+    num_causal_judgements = 3,
+    max_head_atoms = 1
     }    
 
 template_nocausal_judgement_1_1 :: Template
@@ -281,7 +336,8 @@ template_nocausal_judgement_1_1 = Template {
     num_causes_rules = 6,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 0
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }
 
 
@@ -332,7 +388,8 @@ template_causal_judgement_2_1 = Template {
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 3
+    num_causal_judgements = 3,
+    max_head_atoms = 1
     }    
 
 template_nocausal_judgement_2_1 :: Template
@@ -345,7 +402,8 @@ template_nocausal_judgement_2_1 = Template {
     num_causes_rules = 6,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 0
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }
 
 
@@ -392,7 +450,8 @@ template_misc_0_1 = Template {
     num_causes_rules = 0,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 2
+    num_causal_judgements = 2,
+    max_head_atoms = 1
     }    
 
 frame_misc_1_1 :: Frame    
@@ -429,7 +488,8 @@ template_misc_1_1 = Template {
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 10
+    num_causal_judgements = 10,
+    max_head_atoms = 1
     }    
 
 frame_misc_2_1 :: Frame
@@ -483,7 +543,8 @@ template_misc_2_1 = Template {
     num_causes_rules = 0,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 2
+    num_causal_judgements = 2,
+    max_head_atoms = 1
     }    
 
 frame_misc_3_1 :: Frame

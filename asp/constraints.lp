@@ -136,7 +136,7 @@ violation(undefined_var(R, V)) :-
 
 % NEW APPROACH WITHOUT DIV3
 
-% Choice-ground should always be in the head. Additional constraints ensures it is then also in the body
+% Choice-ground should always be in the head. Additional constraint ensures it is then also in the body. Since the rule is unsafe otherwise
 violation(ground_notin_head(R, V)) :-
     rule_ground(R, V),
     not var_in_caus_judg_head(V, R).
@@ -154,16 +154,6 @@ violation(tochoose_in_body(R,V)) :-
 violation(independent_in_head(R,V)) :-
     rule_independent(R, V),
     var_in_caus_judg_head(V, R).
-
-
-
-
-% Niet nodig, want als in rule en niet in body zit je al in head
-% violation(independent()) :-
-%    rule_div3(R, _, _, Independent),
-%    contains_var(Independent, V)
-%    var_in_rule(R, V)
-%    not var_in_caus_judg_body(V, R),
 
 
 %------------------------------------------------------------------------------
@@ -322,8 +312,9 @@ is_held_out_time_step(T) :-
 %     not contains_var(Tochoose, V).
 
 
-% NEW FORMULATION WITHOUT DIV3 APPROACH
-
+% NEW FORMULATION WITHOUT DIV3 APPROACH, I allow permanent heads as wel as non-permanent heads
+% DIT MOET WEG VOLGENS MIJN STUK!!!!!!!!!!1
+% SAFENESS IS NIET TMEER NODIG
 :-  causal_judgement_head(R, s(_, V)),
     not rule_tochoose(R,V),
     not var_in_caus_judg_body(V, R).
@@ -333,6 +324,19 @@ is_held_out_time_step(T) :-
     not var_in_caus_judg_body(V, R).
 
 :-  causal_judgement_head(R, s2(_, _, V)),
+    not rule_tochoose(R,V),
+    not var_in_caus_judg_body(V, R).
+
+
+:-  causal_judgement_head(R, isa(_, V)),
+    not rule_tochoose(R,V),
+    not var_in_caus_judg_body(V, R).
+
+:-  causal_judgement_head(R, isa2(_, V, _)),
+    not rule_tochoose(R,V),
+    not var_in_caus_judg_body(V, R).
+
+:-  causal_judgement_head(R, isa2(_, _, V)),
     not rule_tochoose(R,V),
     not var_in_caus_judg_body(V, R).
 

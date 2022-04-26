@@ -34,6 +34,7 @@ senses(s2(c_r, obj_sensor_a, obj_sensor_b), 6).
 % IK DENK DAT JE DIT GEBRUIKT VOOR SPATIAL UNITY CONDITION?
 is_object(obj_sensor_a).
 is_object(obj_sensor_b).
+
 %is_object(grid).
 % is_concept wordt automatisch gegenereerd in 'interpretation'
 

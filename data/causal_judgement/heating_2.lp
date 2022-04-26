@@ -4,8 +4,8 @@ senses(s2(c_temp, obj_rock_on_floor, obj_number_0), 1).
 senses(s2(c_temp, obj_rock_on_floor, obj_number_1), 2).
 senses(s2(c_temp, obj_rock_on_floor, obj_number_2), 3).
 senses(s2(c_temp, obj_rock_on_floor, obj_number_3), 4).
-valuation(s2(c_temp, obj_rock_on_floor, obj_number_4), 5).
-valuation(s2(c_temp, obj_rock_on_floor, obj_number_5), 6).
+senses(s2(c_temp, obj_rock_on_floor, obj_number_4), 5).
+senses(s2(c_temp, obj_rock_on_floor, obj_number_5), 6).
 valuation(s2(c_temp, obj_rock_on_floor, obj_number_6), 7).
 
 

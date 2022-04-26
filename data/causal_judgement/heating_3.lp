@@ -1,91 +1,32 @@
-% senses(s2(c_shines, obj_sun, obj_rock_on_floor), 1).
-% senses(s2(c_notshines, obj_sun, obj_rock_on_floor), 2).
-% senses(s2(c_notshines, obj_sun, obj_rock_on_floor), 3).
-
-% senses(s2(c_shines, obj_sun, obj_rock_on_floor), 4).
-% senses(s2(c_notshines, obj_sun, obj_rock_on_floor), 5).
-
-
-% senses(s2(c_shines, obj_sun, obj_rock_on_floor), 6).
-% senses(s2(c_shines, obj_sun, obj_rock_on_floor), 7).
-% senses(s2(c_notshines, obj_sun, obj_rock_on_floor), 8).
-
 
 senses(s2(c_temp, obj_rock_on_floor, obj_number_0), 1).
-senses(s2(c_temp, obj_rock_on_floor, obj_number_4), 2).
-senses(s2(c_temp, obj_rock_on_floor, obj_number_8), 3).
+senses(s2(c_temp, obj_rock_on_floor, obj_number_1), 2).
+senses(s2(c_temp, obj_rock_on_floor, obj_number_4), 3).
 senses(s2(c_temp, obj_rock_on_floor, obj_number_0), 4).
-senses(s2(c_temp, obj_rock_on_floor, obj_number_6), 5).
-senses(s2(c_temp, obj_rock_on_floor, obj_number_9), 6).
+senses(s2(c_temp, obj_rock_on_floor, obj_number_2), 5).
 
-valuation(s2(c_temp, obj_rock_on_floor, obj_number_0), 7).
-valuation(s2(c_temp, obj_rock_on_floor, obj_number_3), 8).
-valuation(s2(c_temp, obj_rock_on_floor, obj_number_5), 9).
+valuation(s2(c_temp, obj_rock_on_floor, obj_number_0), 6).
+valuation(s2(c_temp, obj_rock_on_floor, obj_number_2), 7).
+valuation(s2(c_temp, obj_rock_on_floor, obj_number_5), 8).
 
-% HARDER
-senses(s(c_shinedon, obj_rock_on_floor), 1).
-senses(s(c_shinedon, obj_rock_on_floor), 2).
-senses(s(c_notshinedon, obj_rock_on_floor), 3).
-
-senses(s(c_shinedon, obj_rock_on_floor), 4).
-senses(s(c_shinedon, obj_rock_on_floor), 5).
-senses(s(c_notshinedon, obj_rock_on_floor), 6).
-
-senses(s(c_shinedon, obj_rock_on_floor), 7).
-senses(s(c_shinedon, obj_rock_on_floor), 8).
-senses(s(c_notshinedon, obj_rock_on_floor), 9).
-
-
+senses(s2(c_temp, obj_rock_on_floor, obj_number_6), 9).
 
 % EASIER
-% senses(s(c_shinedon, obj_rock_on_floor), 1).
+exogenous(s(c_shinedon, obj_rock_on_floor), 1).
+exogenous(s(c_shinedon, obj_rock_on_floor), 2).
+exogenous(s(c_notshinedon, obj_rock_on_floor), 3).
 
-% senses(s(c_shinedon, obj_rock_on_floor), 2).
+exogenous(s(c_shinedon, obj_rock_on_floor), 4).
+exogenous(s(c_notshinedon, obj_rock_on_floor), 5).
 
-
-% senses(s(c_notshinedon, obj_rock_on_floor), 3).
-
-% % senses(s(c_shinedon, obj_rock_on_floor), 4).
-% senses(s(c_shinedon, obj_rock_on_floor), 5).
-% senses(s(c_notshinedon, obj_rock_on_floor), 6).
-
-% % senses(s(c_shinedon, obj_rock_on_floor), 7).
-% senses(s(c_shinedon, obj_rock_on_floor), 8).
-% senses(s(c_notshinedon, obj_rock_on_floor), 9).
+exogenous(s(c_shinedon, obj_rock_on_floor), 6).
+exogenous(s(c_shinedon, obj_rock_on_floor), 7).
+exogenous(s(c_shinedon, obj_rock_on_floor), 8).
 
 
+is_time(1..9).
 
-
-
-
-
-
-
-
-
-% senses(s(c_cold, obj_rock_on_floor), 3).
-% senses(s(c_cold, obj_rock_on_floor), 4).
-% senses(s(c_cold, obj_rock_on_floor), 5).
-% senses(s(c_hot, obj_rock_on_floor), 6).
-% senses(s(c_hot, obj_rock_on_floor), 7).
-
-
-
-
-% senses(s(c_cold, obj_rock_on_floor), 1).
-% senses(s(c_hot, obj_rock_on_floor), 2).
-% senses(s(c_cold, obj_rock_on_floor), 3).
-% senses(s(c_cold, obj_rock_on_floor), 4).
-% senses(s(c_cold, obj_rock_on_floor), 5).
-% senses(s(c_hot, obj_rock_on_floor), 6).
-% senses(s(c_hot, obj_rock_on_floor), 7).
-
-% senses(s(c_cold, obj_rock_on_floor), 8).
-% senses(s(c_cold, obj_rock_on_floor), 9).
-% senses(s(c_cold, obj_rock_on_floor), 10).
-% senses(s(c_hot, obj_rock_on_floor), 11).
-
-is_time(1..10).
+is_object(obj_rock_on_floor).
 
 % :-	holds(s(c_cold, X), T),
 % 	holds(s(c_hot, X), T).
@@ -103,13 +44,13 @@ is_time(1..10).
 incompossible(s(c_shinedon, X), s(c_notshinedon, X)) :-
  	permanent(isa(t_rock, X)).
 
-:-	holds(s(c_shinedon, X), T),
-	holds(s(c_notshinedon, X), T).
+%%%%%%%%%NODIG?
+% :-	holds(s(c_shinedon, X), T),
+% 	holds(s(c_notshinedon, X), T).
 
 
-:- permanent(isa(t_rock, X)), not holds(s(c_shinedon, X), T), not holds(s(c_notshinedon, X), T), is_time(T).
-
-
+% :- permanent(isa(t_rock, X)), not holds(s(c_shinedon, X), T), not holds(s(c_notshinedon, X), T), is_time(T).
+%%%%%%%%%%%
 
 
 % incompossible(s2(c_shines, Y, X), s2(c_notshines, Y, X)) :-
@@ -119,7 +60,6 @@ incompossible(s(c_shinedon, X), s(c_notshinedon, X)) :-
 % 	holds(s2(c_notshines, X, Y), T).
 
 % :- permanent(isa(t_rock, X)), permanent(isa(t_shiner, Y)), not holds(s2(c_shines, Y, X), T), not holds(s2(c_notshines, Y, X), T).
-
 
 
 % % ∃! clause for temp : at most one
@@ -140,5 +80,3 @@ incompossible(s2(c_temp, X, Y), s2(c_temp, X, Y2)) :-
 	permanent(isa(t_number, Y)),
 	permanent(isa(t_number, Y2)),
 	Y != Y2.
-
-

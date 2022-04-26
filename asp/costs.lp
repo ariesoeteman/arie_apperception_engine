@@ -16,6 +16,8 @@
 
 :~ gen_permanent(A). [1 @ 2, A]
 
+
+
 %% ADDED BY ME
 
 :~ causal_judgement_body(R, A). [1 @ 2, R, A]
@@ -24,7 +26,11 @@
 
 % :~ causal_judgement_body(R, A). [1 @ 2, R, A]
 
-:~ causal_judgement_head(R, A). [1 @ 1, R, A]
+% :~ causal_judgement_head(R, A). [1 @ 1, R, A]
+
+
+% OF alleen extra minimization op de regels waar een existential in zit
+:~ causal_judgement_head(R, A), rule_tochoose(R,_). [1 @ 1, R, A]
 
 % :~ incorrect_valuation(R, A). [1 @ 2, R, A]
 

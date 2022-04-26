@@ -79,7 +79,8 @@ data Template = Template {
     num_causes_rules :: Int,
     num_visual_predicates :: Maybe Int,
     use_noise :: Bool,
-    num_causal_judgements :: Int
+    num_causal_judgements :: Int,
+    max_head_atoms :: Int
 } deriving (Eq, Ord, Show)
 
 
@@ -101,7 +102,7 @@ data VarAtom =      VA Concept [Var] |
 -- ADJUSTED
 data Rule = Arrow RuleID [Atom] Atom | 
             Causes RuleID [Atom] Atom |
-            Causal_judgement RuleID [Atom] String Atom |
+            Causal_judgement RuleID [Atom] String [Atom] |
             Xor RuleID [Atom] [Atom]
             deriving (Eq, Ord)
 
@@ -223,6 +224,7 @@ interpretation_lines t = es ++ ts ++ crs ++ urs ++ cjs ++ cs ++ vs ++ stats wher
 
 -- map met kleine letter m????
 -- Hier worden de 'is_concept gemaakt.. maar waar gebruik je ze voor?
+-- WAAROM worden hier niet de 'objects' gegenereerd
 gen_elements :: Frame -> [String]
 gen_elements t = [divider, "% Elements", divider, ""] ++ xs where
     xs = cs ++ cs2 ++ ss ++ ts ++ [""]
@@ -236,7 +238,7 @@ gen_elements t = [divider, "% Elements", divider, ""] ++ xs where
     h x = "is_type(" ++ show x ++ ")."
 
 
--- Objects komen als 'permanent(isa(t, x))'
+-- Objects komen als 'permanent(isa(t_number, x))'
 -- get_objects is objects . frame
 gen_typing :: Template -> [String]
 gen_typing t = res where
@@ -344,6 +346,7 @@ gen_causal_judgements t n = h ++ cs ++ causjudg ++ uses ++ [""] where
     h = [divider, "% Causal Judgements", divider, ""]
     min_bs = show (min_body_atoms t)
     max_bs = show (max_body_atoms t)
+    max_hs = show (max_head_atoms t)
     cs = [
         "1 { rule_var_group(R, VG) : is_var_group(VG) } 1 :- is_causal_judgement(R), use_rule(R).",
         -- "",
@@ -351,7 +354,7 @@ gen_causal_judgements t n = h ++ cs ++ causjudg ++ uses ++ [""] where
         "",
         min_bs ++ " { causal_judgement_body(R, VA) : is_var_atom(VA) } " ++ max_bs ++ " :- is_causal_judgement(R), use_rule(R).", 
         "",
-        "1 { causal_judgement_head(R, VA) : cause_head(VA) } 1 :- is_causal_judgement(R), use_rule(R).",
+        "1 { causal_judgement_head(R, VA) : is_var_atom(VA) }" ++ max_hs ++ " :- is_causal_judgement(R), use_rule(R).",
         "",
         "1 { rule_ground(R,V); rule_tochoose(R,V); rule_independent(R,V) } 1 :- is_causal_judgement(R), use_rule(R), rule_var_group(R,VG), contains_var(VG,V).",
         ""
@@ -366,6 +369,7 @@ divider :: String
 divider = "%------------------------------------------------------------------------------"
 
 -- Use noise is only relevant als 'blind sense' condition... Wat is dit voor condition?
+-- Blind sense condition ensures dat als iets gesensed wordt, het ook moet holden.
 gen_constraints :: Template -> [String]
 gen_constraints t = [divider, "% Constraints", divider, ""] ++ c1 ++ c2 where
     c1 = case flag_ablation_remove_kant_condition_blind_sense of
@@ -460,12 +464,14 @@ gen_subs name t = do
     Monad.forM_ (var_groups frm) $ \vg -> do
         let n = var_group_name vg
         Monad.forM_ vg $ \v -> do
+            if length vg == 1 then appendFile f ("singleton_group(var_group_" ++ n ++ ", " ++ show v ++ ").\n") else return ()
             appendFile f ("contains_var(var_group_" ++ n ++ ", " ++ show v ++ ").\n")
         appendFile f "\n"
     Monad.forM_ (non_group_singleton_vars frm) $ \vg -> do
         let n = var_group_name vg
         Monad.forM_ vg $ \v -> do
             appendFile f ("contains_var(var_group_" ++ n ++ ", " ++ show v ++ ").\n")
+            appendFile f ("singleton_group(var_group_" ++ n ++ ", " ++ show v ++ ").\n")
         appendFile f "\n"
     appendFile f "\n\n"
     appendFile f ("%----------\n")
@@ -1264,9 +1270,10 @@ extract_causes :: [String] -> [Rule]
 extract_causes xs = map f (extract_cause_heads xs) where
     f (r, c) = Causes r (extract_body xs r) c
 
-extract_causal_judgements :: [String] -> [Rule]
-extract_causal_judgements xs = map f (extract_causal_judgement_heads xs) where
-    f (r, c) = Causal_judgement r (extract_causal_judgement_body xs r) (extract_choose_vars xs r) c
+-- VAN Mij o.b.v. Evans
+-- extract_causal_judgements :: [String] -> [Rule]
+-- extract_causal_judgements xs = map f (extract_causal_judgement_heads xs) where
+--     f (r, c) = Causal_judgement r (extract_causal_judgement_body xs r) (extract_choose_vars xs r) c
 
 
 extract_causal_judgement_body :: [String] -> RuleID -> [Atom]
@@ -1275,6 +1282,34 @@ extract_causal_judgement_body xs r = Maybe.mapMaybe f xs where
         False -> Nothing
         True -> Just $ drop_last (List.drop (length p) x)
     p = "causal_judgement_body(" ++ r ++ ","
+
+
+-- NIEUW VAN MIJ
+extract_causal_judgements :: [String] -> [Rule]
+extract_causal_judgements xs = map f (List.nub(extract_causal_judgement_numbers xs)) where
+    f (r) = Causal_judgement r (extract_causal_judgement_body xs r) (extract_choose_vars xs r) cs where
+        cs = extract_causal_judgement_heads_for_number xs r
+
+extract_causal_judgement_numbers :: [String] -> [RuleID]
+extract_causal_judgement_numbers xs = Maybe.mapMaybe f xs where
+    p = "causal_judgement_head("
+    f x = case List.isPrefixOf p x of
+        False -> Nothing
+        True -> Just $ g (List.drop(length p) x) where
+            g d = r where
+                (r:rs) = bimble_split d ','
+
+extract_causal_judgement_heads_for_number :: [String] -> RuleID -> [Atom]
+extract_causal_judgement_heads_for_number xs r = Maybe.mapMaybe f xs where
+    p = "causal_judgement_head("++ r ++ ","
+    f x = case List.isPrefixOf p x of
+        False -> Nothing
+        True -> Just $ drop_last (List.drop(length p) x)
+    
+
+-- groupTuples :: ([(RuleID, Atom)]) -> [(RuleID, [Atom])]
+-- groupTuples tuples = grouped
+--     where grouped = Map.toList $ Map.fromListWith (++) [(k, [v]) | (k, v) <- tuples]
 
 
 -- NOTE I HARDCODED THAT I ONLY SELECT FIRST 'rule_div3' WITH THE RIGHT ID... NOT VERY ROBUST
@@ -1332,7 +1367,7 @@ extract_arrow_heads xs = Maybe.mapMaybe f xs where
 bimble_split :: String -> Char -> [String]
 bimble_split s c = bimble_split2 s c ""
 
--- Skip de character 'c' in de string. Voeg de andere characters toe in een lijst
+-- Skip de character 'c' in de string. Voeg de andere characters toe in een lijst, elke string voor en na de comma is een element
 bimble_split2 :: String -> Char -> String -> [String]
 bimble_split2 "" _  acc = [acc]
 bimble_split2 (x:xs) c acc | x == c = acc : bimble_split2 xs c ""
@@ -1443,12 +1478,14 @@ write_exist choose = f choose where
     -- p = "var_group_"
 
 
+
 -- HIER 'write_exist' vervangen voor gewoon de string.
 instance Show Rule where
     show (Arrow r bs h) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ arrow_string ++ h
     show (Causes r bs c) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ causes_string ++ c
     show (Xor r bs hs) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ arrow_string ++ concat (List.intersperse xor_string hs)
-    show (Causal_judgement r bs choose h) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ causes_string ++ write_exist choose ++ h
+    -- show (Causal_judgement r bs choose h) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ causes_string ++ write_exist choose ++ h
+    show (Causal_judgement r bs choose hs) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ causes_string ++ write_exist choose ++ concat (List.intersperse and_string hs)
 
 -- We only want to display the optimum answer, not the earlier ones.
 last_answers :: [ClingoOutput] -> [ClingoOutput]

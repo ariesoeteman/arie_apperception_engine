@@ -1085,6 +1085,8 @@ template_house vx vy wx wy = Template {
     num_arrow_rules = 2,
     num_causes_rules = 4,
     num_visual_predicates = Nothing,
-    use_noise = False
+    use_noise = False,
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }    
 
