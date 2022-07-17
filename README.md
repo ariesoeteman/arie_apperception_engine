@@ -1,4 +1,4 @@
-# The source code for *"Making sense of sensory input"* and *"Making sense of raw input"*
+# The source code for chapter 3 of my thesis "Aritificial Understanding"
 
 ## Installation instructions
 
@@ -20,73 +20,42 @@ Once you have Haskell and Clingo installed, just run (from the root directory):
    * `cabal install`
    * `cd ..`
 
-## Simple Examples
+## Examples
 
-Once the system is installed (see above), you are ready to try some examples.
+Once the system is installed (see above), you are ready to try some examples developed for the original Apperception Engine by Richard Evans:
 
 To run these examples, **make sure you are in the root directory called apperception**.
 
 A single sensor oscillating between on and off:
-   * `~/.cabal/bin/solve misc predict_1.lp`
+   * `~/.cabal/bin/mysolve misc predict_1.lp`
 
 Two sensors, one oscillates between on and off, while the other has the same reading throughout:
-   * `~/.cabal/bin/solve misc predict_2.lp`
+   * `~/.cabal/bin/mysolve misc predict_2.lp`
 
 Exogenous action:
-   * `~/.cabal/bin/solve misc exog_1.lp`
+   * `~/.cabal/bin/mysolve misc exog_1.lp`
 
 Searching through templates of increasing complexity, looking for a unified interpretation:
-   * `~/.cabal/bin/solve eca-general predict_eca_245_b3.lp`
+   * `~/.cabal/bin/mysolve eca-general predict_eca_245_b3.lp`
 
 ## More Complex Examples
 
-These examples take significantly longer to run than the simple examples above. There is a time-limit of 4 hours per template. 
+See https://github.com/RichardEvans/apperception for a list of more complex examples for the original system.
 
-ECA prediction:
-`~/.cabal/bin/solve eca predict_110_b5_t14.lp`
+Now to make use of existential quantification in the head of judgements you can try the following examples:
 
-ECA retrodiction:
-`~/.cabal/bin/solve eca retrodict_110_b5_t14.lp`
+A simple counting sequence
+~/.cabal/bin/mysolve cj heating_2.lp
 
-ECA imputation:
-`~/.cabal/bin/solve eca impute_110_b5_t14.lp`
 
-The Seek Whence "theme song" babbbbbcbbdb...
-`~/.cabal/bin/solve sw predict_3.lp`
+A simple example in which conjunction of atoms in the head is helpful:
+~/.cabal/bin/mysolve cj conjunction_1.lp
 
-Music prediction:
-`~/.cabal/bin/solve music predict_IncyWincySpiderSmall.lp`
 
-Rhythm prediction:
-`~/.cabal/bin/solve rhythm predict_Mazurka.lp`
+The final example of chapter 3 (this takes about 2 hours) :
+~/.cabal/bin/mysolve cj heating_1.lp
 
-Binding prediction:
-`~/.cabal/bin/solve binding predict_r2_b5.lp`
-
-Occlusion:
-`~/.cabal/bin/solve occlusion w1`
-
-Mislabelled data (noise):
-`~/.cabal/bin/solve mislabel predict_1_100_0_1.lp`
-
-Fuzzy sequences:
-`~/.cabal/bin/solve noisy 1 3 2`
-
-Sokoban:
-`~/.cabal/bin/solve sokoban e_8_17`
-
-Sokoban from pixels:
-`~/.cabal/bin/solve sok-pixels e_10_3`
-
-In general, solve can be run with any file in the data directory.
-The options are:
- * `~/.cabal/bin/solve eca <file in data/eca>`
- * `~/.cabal/bin/solve sw <file in data/sw>`
- * `~/.cabal/bin/solve music <file in data/music>`
- * `~/.cabal/bin/solve rhythm <file in data/rhythm>`
- * `~/.cabal/bin/solve binding <file in data/binding>`
- * `~/.cabal/bin/solve occlusion <file in data/binding>`
- * `~/.cabal/bin/solve walker [predict/retrodict/impute] <world-id>`
+In general, mysolve can be run with any file in the data directory. All examples added by me are in the data/causal_judgement folder.
 
 ## Understanding the output of the solve process
 
@@ -104,6 +73,7 @@ To generate a latex-readable description of the output:
  * recompile: `scripts/compile_solve.sh`
  * run again
 
+
 ## Data generation
 
 The data is already provided in the `data/` folder.
@@ -115,6 +85,3 @@ But if you want to regenerate it:
 * `./sw all`
 * `./music all`
 * `./rhythm all`
-
-
-
