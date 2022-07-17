@@ -1,3 +1,5 @@
+% The sensory sequence
+
 senses(s(c_on, obj_sensor_a), 1).
 senses(s(c_green, obj_sensor_a), 1).
 

@@ -1,13 +1,15 @@
 
+%The sensory sequence
+
 senses(s2(c_temp, obj_rock_on_floor, obj_number_0), 1).
 senses(s2(c_temp, obj_rock_on_floor, obj_number_1), 2).
 senses(s2(c_temp, obj_rock_on_floor, obj_number_4), 3).
 senses(s2(c_temp, obj_rock_on_floor, obj_number_0), 4).
 senses(s2(c_temp, obj_rock_on_floor, obj_number_2), 5).
 
-valuation(s2(c_temp, obj_rock_on_floor, obj_number_0), 6).
-valuation(s2(c_temp, obj_rock_on_floor, obj_number_2), 7).
-valuation(s2(c_temp, obj_rock_on_floor, obj_number_5), 8).
+validation(s2(c_temp, obj_rock_on_floor, obj_number_0), 6).
+validation(s2(c_temp, obj_rock_on_floor, obj_number_2), 7).
+validation(s2(c_temp, obj_rock_on_floor, obj_number_5), 8).
 
 senses(s2(c_temp, obj_rock_on_floor, obj_number_6), 9).
 
@@ -28,38 +30,8 @@ is_time(1..9).
 
 is_object(obj_rock_on_floor).
 
-% :-	holds(s(c_cold, X), T),
-% 	holds(s(c_hot, X), T).
-
-% :- permanent(isa(t_rock, X)), is_time(T),
-% 	not has_temp(X,T).
-
-% has_temp(X,T) :- holds(s(c_cold, X), T).
-% has_temp(X,T) :- holds(s(c_hot, X), T).
-
-% incompossible(s(c_cold, X), s(c_hot, X)) :-
-% 	permanent(isa(t_rock, X)).
-
-
 incompossible(s(c_shinedon, X), s(c_notshinedon, X)) :-
  	permanent(isa(t_rock, X)).
-
-%%%%%%%%%NODIG?
-% :-	holds(s(c_shinedon, X), T),
-% 	holds(s(c_notshinedon, X), T).
-
-
-% :- permanent(isa(t_rock, X)), not holds(s(c_shinedon, X), T), not holds(s(c_notshinedon, X), T), is_time(T).
-%%%%%%%%%%%
-
-
-% incompossible(s2(c_shines, Y, X), s2(c_notshines, Y, X)) :-
-%  	permanent(isa(t_rock, X)), permanent(isa(t_shiner, Y)).
-
-% :-	holds(s2(c_shines, X, Y), T),
-% 	holds(s2(c_notshines, X, Y), T).
-
-% :- permanent(isa(t_rock, X)), permanent(isa(t_shiner, Y)), not holds(s2(c_shines, Y, X), T), not holds(s2(c_notshines, Y, X), T).
 
 
 % % ∃! clause for temp : at most one

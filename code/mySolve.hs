@@ -108,7 +108,7 @@ extract_sokoban_data e = (max_x, max_y, num_blocks) where
     num_blocks = sum (map f s)
     f x = length (filter (== 'b') x)
 
--- Template komt van 'template_sokoban' in 'solvetemplates.hs'
+-- Template comes from 'template_sokoban' in 'solvetemplates.hs'
 solve_sokoban :: String -> IO ()
 solve_sokoban f = do
     let (max_x, max_y, n_blocks) = get_sokoban_data f

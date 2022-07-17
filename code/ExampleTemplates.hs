@@ -14,11 +14,8 @@ extension_templates = [
     ("heating_2.lp", ("data/causal_judgement", template_heating_2, "heating_2.lp")),
     ("heating_3.lp", ("data/causal_judgement", template_heating_3, "heating_3.lp")),
     ("conjunction_1.lp", ("data/causal_judgement", template_conjunction_1, "conjunction_1.lp"))
-    -- ("figurative_synthesis_1.lp", ("data/figurative_synthesis", template_figurative_synthesis_1, "figurative_synthesis_1.lp"))
    ]
 
--- eerste is input-argument 'lookup-file'
--- DAN: 'dir, template, input'
 misc_templates :: [(String, (String, Template, String))]
 misc_templates = [
     ("predict_0.lp", ("data/misc", template_misc_0_1, "predict_0.lp")),
@@ -81,7 +78,6 @@ template_conjunction_1 = Template {
     max_head_atoms = 2
     }    
 
--- WAAR KOMT 'GIVEN' precies stoer doen?
 frame_heating_1 :: Frame    
 frame_heating_1 = Frame {
     types = [T "rock", T "number"],
@@ -105,8 +101,6 @@ frame_heating_1 = Frame {
         (P "succ", Given, [T "number", T "number"]),
         (P "less", Given, [T "number", T "number"])],
     fluid_concepts = [
-        -- (C "hot", [T "rock"]), 
-        -- (C "cold", [T "rock"]),
         (C "temp", [T "rock", T "number"]),
         (C "treshold", [T "number"]),
         (C "shinedon", [T "rock"]),
@@ -583,7 +577,8 @@ template_misc_3_1 = Template {
     num_causes_rules = 4,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 10
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }    
 
 frame_misc_4_1 :: Frame
@@ -638,7 +633,8 @@ template_misc_4_1 = Template {
     num_causes_rules = 1,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 0
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }   
 
 template_misc_judg_4_1 :: Template
@@ -651,7 +647,8 @@ template_misc_judg_4_1 = Template {
     num_causes_rules = 1,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 1
+    num_causal_judgements = 1,
+    max_head_atoms = 1
     }   
 
 
@@ -693,7 +690,8 @@ template_misc_5_1 = Template {
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 0
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }    
 
 frame_exog_1 :: Frame    
@@ -732,7 +730,8 @@ template_exog_1 = Template {
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 2
+    num_causal_judgements = 2,
+    max_head_atoms = 1
     }    
 
 frame_misc_4_mislabel :: Frame    
@@ -774,8 +773,9 @@ template_misc_4_mislabel = Template {
     num_causes_rules = 3,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 3
-    }   
+    num_causal_judgements = 0,
+    max_head_atoms = 1
+    }
 
 frame_first_last_1 :: Frame    
 frame_first_last_1 = Frame {
@@ -814,7 +814,8 @@ template_first_last_1 = Template {
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 2
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }    
 
 frame_first_last_3 :: Frame    
@@ -854,7 +855,8 @@ template_first_last_3 = Template {
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 2
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }    
 
 frame_first_last_5 :: Frame    
@@ -894,7 +896,8 @@ template_first_last_5 = Template {
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 2
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }        
 
 frame_first_last_6 :: Frame    
@@ -945,7 +948,8 @@ template_first_last_6 = Template {
     num_causes_rules = 2,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 2
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }      
 
 frame_second_last_1 :: [String] -> Frame    
@@ -1004,7 +1008,8 @@ template_second_last_1 = Template {
     num_causes_rules = 0,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 0
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }        
 
 template_second_last_2 :: Template
@@ -1017,5 +1022,6 @@ template_second_last_2 = Template {
     num_causes_rules = 0,
     num_visual_predicates = Nothing,
     use_noise = False,
-    num_causal_judgements = 0
+    num_causal_judgements = 0,
+    max_head_atoms = 1
     }            

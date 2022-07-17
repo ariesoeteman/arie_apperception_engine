@@ -1,22 +1,31 @@
+
+% This file contains extensions of existing clauses to 
+% 'causal judgements'. The minimization on 'validation' atoms
+% is also for a large part implemented here.
+
+
 %------------------------------------------------------------------------------
 % eval
 %------------------------------------------------------------------------------
 
-
-%%% VAN MIJ
+%%
+%% Clauses below are added for geometric logic
+%%
 
 eval_causal_judgement_body(R, Subs, T) :-
     rule_subs(R, Subs),
     is_time(T),
     eval_atom(V, Subs, T) : causal_judgement_body(R, V).
 
-%%%
-
-
 eval_body(R, Subs, T) :-
+    not is_causal_judgement(R),
     rule_subs(R, Subs),
     is_time(T),
     eval_atom(V, Subs, T) : rule_body(R, V).
+
+%%
+%% Until here
+%%
 
 eval_atom(VA, Subs, T) :-
     ground_atom(VA, GA, Subs),
@@ -65,7 +74,6 @@ holds(S, T+1) :-
     not -holds(S, T+1).
 
 
-% INCOMPOSSIBILITY ZORGT VOOR UITZONDERINGEN OP FRAME AXIOM!!
 -holds(S, T) :-
     holds(S2, T),
     incompossible(S, S2).
@@ -84,14 +92,9 @@ holds(GA, T) :-
     ground_atom(VA, GA, Subs),
     eval_body(R, Subs, T).
 
-
-
-% holds(GC, T+1) :-     
-%     causal_judgement_head(R, VC),
-%     eval_body(R, Subs, T),
-%     ground_atom(VC, GC, Subs),
-%     is_time(T+1).
-
+%%
+%% Clauses below are added for geometric logic
+%%
 
 holds(GC, T+1) :-
     rule_choice(R, T, Subs),
@@ -107,15 +110,14 @@ rule_choice(R, T, Subs) :-
     not diff_choice(R, T, Subs).
 
 %% If body is satisfied, then there must exist a possible choice for each ground substitution
-:- eval_causal_judgement_body(R, Subs, T),
-not possible_subs(R, Diff) : same_ground(R, Subs, Diff).
 
-% diff_choice(R, T, Subs1):-
-%     rule_choice(R, T, Subs2),
-%     rule_div3(R, Ground, Tochoose, _), 
-%     contains_var(Tochoose, V1), 
-%     subs(Subs1, V1, O1), subs(Subs2, V1, O2), O1 != O2,
-%     subs(Subs2, V2, O3) : contains_var(Ground, V2), subs(Subs1, V2, O3).
+:- eval_causal_judgement_body(R, Subs, T), rule_ground(R,_),
+    not possible_subs(R, Diff) : same_ground(R, Subs, Diff).
+
+has_ground(R) :- rule_ground(R,_).
+
+:- eval_causal_judgement_body(R, Subs, T), not has_ground(R),
+    not possible_subs(R, Diff) : rule_subs(R, Diff).
 
 
 diff_choice(R, T, Diff):-
@@ -130,93 +132,45 @@ possible_subs(R,Subs) :-
     permanent(GH) : causal_judgement_head(R, Head), ground_atom(Head, GH, Subs), is_var_permanent(Head).
 
 
-%% HIERONDER GA IK PROBEREN ZEKERHEID OP VALUATION ATOMS TE BEVORDEREN
-
-% DEZE Kan trivial '1-prediction' geven:
-% y=0, z=0, s2(c_temp, var_x, var_y) -> s2(c_temp, var_x, var_z)
+% If an atom is predicted by a rule without existential quantifiction, 
+% the realm of possibilities has size 1
 possible_predictions(GA, T, 1) :-
-    valuation(GA, T),
+    validation(GA, T),
     rule_arrow_head(R, VA),
     ground_atom(VA, GA, Subs),
     eval_body(R, Subs, T),
     not head_in_body(R, Subs).
 
 possible_predictions(GC, T, 1) :-
-    valuation(GC, T),
+    validation(GC, T),
     rule_head_causes(R, VC),
     ground_atom(VC, GC, Subs),
     eval_body(R, Subs, T-1).
 
 
 
-%%%%%%%%%%%%%%% AANPAK MET DIFF_ATOMS
+% Compute the different choices for Val that can be predicted by R
 
-% same_ground also checks that Subs and Diff are 'possible' for R
 different_option(R, Subs, Val, T, Notval) :-
-    valuation_explanation(R, Subs, Val, T),
+    validation_explanation(R, Subs, Val, T),
     causal_judgement_head(R, VC),
     same_ground(R, Subs, Diff),
-    eval_body(R,Diff,T-1),
+    possible_subs(R, Diff),
+    eval_causal_judgement_body(R,Diff,T-1),
     ground_atom(VC, Val, Subs),
     ground_atom(VC, Notval, Diff),
     Val != Notval.
 
 
-possible_predictions(Val, T, P) :-
-    valuation_explanation(R, Subs, Val, T),
+possible_predictions(Val, T, P+1) :-
+    validation_explanation(R, Subs, Val, T),
     P = #count {Notval : different_option(R, Subs, Val, T, Notval)}.  
 
 
-%%%% DIT ALLEMAAL WEG
+% Compute if R is an explanation for GC
 
-% %% INDEPENDENT CHOICES
-% number_of_choices_for_var(V, C) :-
-%     is_causal_judgement(R), use_rule(R), rule_independent(R,V),
-%     singleton_group(VG, V),
-%     C = #count { S : subs_group(VG, S)}.
-
-% number_of_independent_vars(R, C) :-
-%     is_causal_judgement(R), use_rule(R),
-%     C = #count { V : rule_independent(R, V)}.
-
-
-% 1 {independent_variable_order_for_rule (R, V, 1) : rule_independent(R,V)} 1 :- 
-%     is_causal_judgement(R), use_rule(R), number_of_independent_vars(R,C), C > 0.
-    
-% 1{independent_variable_order_for_rule (R, V, I+1) : rule_independent(R,V)}1 :- 
-%     independent_variable_order_for_rule(R, _, I), I < C, number_of_independent_vars(R,C).
-
-% :- independent_variable_order_for_rule(R,V,I1), independent_variable_order_for_rule(R,V,I2), I1 != I2.
-
-
-% number_of_rule_independent_choices(R, 0, 1) :- is_causal_judgement(R), use_rule(R).
-
-% number_of_rule_independent_choices(R, I, X) :-
-%     number_of_rule_independent_choices(R, I-1, Y), independent_variable_order_for_rule(R,V,I),
-%     number_of_choices_for_var(V, N), X = Y*N.
-
-% number_of_independent_choices(R, I) :- number_of_rule_independent_choices(R, C, I), number_of_independent_vars(R, C).
-
-% possible_predictions(GC, T, Predictions) :-
-%     valuation_explanation(R, Subs, GC, T), not head_in_body(R, Subs),
-%     P = #count {Diff : different_possible_choice(R, Diff, Subs)}, number_of_independent_choices(R, C),
-%     Q = P+C, Predictions = Q / C.    
-
-% different_possible_choice(R, Diff, Subs) :-
-%     valuation_explanation(R, Subs, GC, _),
-%     possible_subs(R, Diff),
-%     rule_tochoose(R,V1), subs(Subs, V1, O1), subs(Diff, V1, O2), O1 != O2,
-%     subs(Diff, V2, O3) : rule_ground(R,V2), subs(Subs, V2, O3).    
-
-%%%%% Tot hier WEG
-
-
-%%% DIT TELT NIET HET AANTAL POSSIBLE INDEPENDENT CHOICES.... dus C is te hoog?
-
-
-% DERDE POGING (use_rule kan weg toch?)
-valuation_explanation(R, Subs, GC, T) :-
-    valuation(GC, T),
+validation_explanation(R, Subs, GC, T) :-
+    validation(GC, T),
     causal_judgement_head(R, VC),
     ground_atom(VC, GC, Subs),
     eval_causal_judgement_body(R, Subs, T-1),
@@ -228,109 +182,25 @@ head_in_body(R,Subs) :-
     ground_atom(VC, GC, Subs),
     ground_atom(VA, GC, Subs).
 
-
-% possible_predictions(GC, T, P+1) :-
-%     valuation_explanation(R, Subs, GC, T),
-%     P = #count {Diff : choose_different_possible_choice(R, Diff, Subs)}.    
-
-
-
-% possible_predictions(GC, T, P+1) :-
-%     valuation(GC, T),
-%     causal_judgement_head(R,VC),
-%     use_rule(R),
-%     ground_atom(VC, GC, Subs),
-%     eval_causal_judgement_body(R, Subs, T-1),
-%     possible_subs(R, Subs),
-%     P = #count {Diff : choose_different_possible_choice(R, Diff, Subs)}.
-
-% different_possible_choice(R, Diff, Subs) :-
-%     valuation(GC, T),
-%     causal_judgement_head(R,VC),
-%     use_rule(R),
-%     ground_atom(VC, GC, Subs),
-%     eval_causal_judgement_body(R, Subs, T-1),
-%     possible_subs(R, Subs),
-%     possible_subs(R, Diff),
-%     rule_tochoose(R,V1), subs(Subs, V1, O1), subs(Diff, V1, O2), O1 != O2,
-%     subs(Diff, V2, O3) : rule_ground(R,V2), subs(Subs, V2, O3).    
-
-% {choose_different_possible_choice(R, Diff, Subs)} :- different_possible_choice(R, Diff, Subs).
-
-% % If two substitutions make the same 'choice', they cannot both be counted as 'different choice'
-% :-  choose_different_possible_choice(R, Diff1, Subs), 
-%     choose_different_possible_choice(R, Diff2, Subs),
-%     Diff1 != Diff2,
-%     subs(Diff2, V, O) : rule_tochoose(R, V), subs(Diff1, V, O).
-
-
-% :-  different_possible_choice(R, Diff, Subs),
-%     not choose_different_possible_choice(R, Diff2, Subs) : different_possible_choice(R, Diff2, Subs), same_choose(R, Diff, Diff2).
-
-% same_choose(R, Diff1, Diff2) :-
-%     is_causal_judgement(R),
-%     use_rule(R),
-%     % valuation(GC, T),
-%     % causal_judgement_head(R,VC),
-%     % ground_atom(VC, GC, _),
-%     possible_subs(R, Diff1),
-%     possible_subs(R, Diff2),
-%     subs(Diff1, V, O) : rule_tochoose(R,V), subs(Diff2, V, O).
-
 same_ground(R, Subs1, Subs2) :-
     is_causal_judgement(R),
     use_rule(R),
-    possible_subs(R, Subs1),
-    possible_subs(R, Subs2),
-    subs(Subs2, V, O) :rule_ground(R, V), subs(Subs1, V, O).
-
-%%% OPLOSSING TOT HIER
+    rule_subs(R, Subs1),
+    rule_subs(R, Subs2),
+    subs(Subs2, V, O) : rule_ground(R, V), subs(Subs1, V, O).
 
 
-% {different_possible_choice(R, Diff, Subs)} :-
-%     valuation(GC, T),
-%     causal_judgement_head(R,VC),
-%     ground_atom(VC, GC, Subs),
-%     eval_causal_judgement_body(R, Subs, T-1),
-%     possible_subs(R, Subs),
-%     possible_subs(R, Diff),
-%     rule_tochoose(R,V1), subs(Subs, V1, O1), subs(Diff, V1, O2), O1 != O2,
-%     subs(Diff, V2, O3) : rule_ground(R,V2), subs(Subs, V2, O3).    
-
-
-% % If two diff's make the same choice, they should not both be counted
-% :-  different_possible_choice(R, Diff1, Subs), 
-%     different_possible_choice(R, Diff2, Subs),
-%     subs(Diff2, V, O) : rule_tochoose(R, V), subs(Diff1, V, O).
-
-% :-  same_ground_different_choose(R, Subs, Diff),
-%     not different_possible_choice(R, Diff, Subs) : same_ground_different_choose(R, Subs, Diff2), same_choose(R, Diff, Diff2).
-%     % same_ground_and_choose(R, Diff, Diff2).
-
-
-% same_ground_different_choose(R, Subs, Diff) :- 
-%     % is_causal_judgement(R),
-%     % use_rule(R),
-%     valuation(GC, T),
-%     causal_judgement_head(R,VC),
-%     ground_atom(VC, GC, Subs),
-%     eval_causal_judgement_body(R, Subs, _),
-%     possible_subs(R, Subs),
-%     possible_subs(R, Diff),
-%     rule_tochoose(R,V1), subs(Subs, V1, O1), subs(Diff, V1, O2), O1 != O2,    
-%     subs(Diff, V, O3) : rule_ground(R,V), subs(Subs, V, O3).    
-
-
-% HIER STOPT EXPERIMENT
-
+% Take the minimum over all posible explanations for GA
 minimum_number_of_choices(GA, T, C) :-
-    valuation(GA, T), C = #min { P : possible_predictions(GA, T, P)}.
+    validation(GA, T), C = #min { P : possible_predictions(GA, T, P)}.
 
 % Valuation atoms should be at least possible to predict:
-:- valuation(GA, T), not possible_predictions(GA, T, _).
+:- validation(GA, T), not possible_predictions(GA, T, _).
 
-%%% Is het bovenstaande niet netter met 'valuation_explanation??'
 
+%%
+%% Until here
+%%
 
 % exogenous action
 holds(GA, T) :- exogenous(GA, T).
@@ -355,7 +225,9 @@ atom_in_rule(A, R) :-
 atom_in_rule(A, R) :- 
     rule_causes_head(R, A).
 
-%My additions:
+%%
+%% Clauses below are added for geometric logic
+%%
 
 var_in_rule(A, R) :- 
     var_in_caus_judg_head(A, R).
@@ -407,8 +279,9 @@ var_in_caus_judg_head(V, R) :-
 var_in_caus_judg_head(V, R) :-
      atom_in_caus_judg_head(isa2(_, _, V), R).
 
-%%%%
-
+%%
+%% Until here
+%%
 is_var(V) :- 
     subs(_, V, _).
 
@@ -677,6 +550,3 @@ earlier_rule(R1, R2) :-
     is_causes_rule(R1),
     is_causes_rule(R2),
     R1 < R2.
-
-
-

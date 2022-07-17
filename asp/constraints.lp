@@ -102,39 +102,9 @@ violation(undefined_var(R, V)) :-
     rule_var_group(R, VG), 
     not contains_var(VG, V).
 
-
-% MY ADJUSTMENTS
-% Every 'choice ground' must be in the head of causal judgement
-% Every 'variable to choose' must be only in the head of causal judgement
-% Every 'independent' variable must be only in the body of causal judgement
-
-
-% Choice grounds and To choose should always be in the rule, independent can also be in the group while not being in the rule
-
-% violation(ground_notin_head(R, V)) :-
-%     rule_div3(R, Ground, _, _),
-%     contains_var(Ground, V),
-%     not var_in_caus_judg_head(V, R).
-
-% violation(tochoose_notin_head(R, V)) :-
-%     rule_div3(R, _, Tochoose, _),
-%     contains_var(Tochoose, V),
-%     not var_in_caus_judg_head(V, R).
-
-% violation(tochoose_in_body(R,V)) :-
-%     rule_div3(R, _, Tochoose, _),
-%     contains_var(Tochoose, V),
-%     var_in_caus_judg_body(V, R).
-
-
-% violation(independent_in_head(R,V)) :-
-%     rule_div3(R, _, _, Independent),
-%     contains_var(Independent, V),
-%     var_in_caus_judg_head(V, R).
-
-
-
-% NEW APPROACH WITHOUT DIV3
+%%
+%% Clauses below are added for geometric logic
+%%
 
 % Choice-ground should always be in the head. Additional constraint ensures it is then also in the body. Since the rule is unsafe otherwise
 violation(ground_notin_head(R, V)) :-
@@ -154,6 +124,10 @@ violation(tochoose_in_body(R,V)) :-
 violation(independent_in_head(R,V)) :-
     rule_independent(R, V),
     var_in_caus_judg_head(V, R).
+
+%%
+%% Until here
+%%
 
 
 %------------------------------------------------------------------------------
@@ -197,12 +171,6 @@ incorrect :-
 
 correct :- not incorrect.
 
-% ADDED BY ME
-
-% incorrect_valuation(A,T) :-
-%     valuation(A, T),
-%     not holds(A, T).
-
 
 %------------------------------------------------------------------------------
 % Correctness of held-outs for pixel arrays
@@ -227,7 +195,6 @@ unsat(T, N) :-
 
 is_impossible_combination(T, N) :- test_impossible_combination(T, N, _, _).
 
-%%%
 
 count_num_inaccurate(N) :- 
     N = #count { T : incorrect_at(T) }.
@@ -268,10 +235,6 @@ is_held_out_time_step(T) :-
     definitely_incompossible_var_atoms(A, B).   
 
 
-%% VAN MIJ
-:-  rule_body(R, A),
-    causal_judgement_head(R, A).
-%%
 
 % Unsafe rules
 :-  rule_arrow_head(R, s(_, V)),
@@ -293,28 +256,12 @@ is_held_out_time_step(T) :-
     not var_in_body(V, R).
 
 
-% My addition: For causal judgements, rule is unsafe if a variable appears in head, not in body, and is not 'chosen'
+%%
+%% Clauses below are added for geometric logic
+%%
 
+% Safeness is not strictly necessary, but implemented here
 
-% :-  causal_judgement_head(R, s(_, V)),
-%     rule_div3(R, _, Tochoose, _),
-%     not var_in_caus_judg_body(V, R),
-%     not contains_var(Tochoose, V).
-
-% :-  causal_judgement_head(R, s2(_, V, _)),
-%     rule_div3(R, _, Tochoose, _),
-%     not var_in_caus_judg_body(V, R),
-%     not contains_var(Tochoose, V).
-
-% :-  causal_judgement_head(R, s2(_, _, V)),
-%     rule_div3(R, _, Tochoose, _),
-%     not var_in_caus_judg_body(V, R),
-%     not contains_var(Tochoose, V).
-
-
-% NEW FORMULATION WITHOUT DIV3 APPROACH, I allow permanent heads as wel as non-permanent heads
-% DIT MOET WEG VOLGENS MIJN STUK!!!!!!!!!!1
-% SAFENESS IS NIET TMEER NODIG
 :-  causal_judgement_head(R, s(_, V)),
     not rule_tochoose(R,V),
     not var_in_caus_judg_body(V, R).
@@ -346,4 +293,3 @@ is_held_out_time_step(T) :-
 %------------------------------------------------------------------------------
 
 :- violation(_).
-

@@ -84,11 +84,6 @@ data Template = Template {
 } deriving (Eq, Ord, Show)
 
 
-
--- GA is a concept with a list of objects (P(a,b)), VA is a concept with a list of variables
--- Or VA is ISA, of ISA2.
--- Waarom heeft Xor twee lists of atoms?
--- NGA for Numberical Ground atom 
 data GroundAtom =   GA Concept [Object] |
                     Perm Concept [Object] |
                     NGA Concept [Object] Int
@@ -113,11 +108,9 @@ data Rule = Arrow RuleID [Atom] Atom |
 
 type Atom = String
 
--- Waarom is ID een string?
 type RuleID = String
 
 
--- Wat is 'maybe'?
 data InterpretationStatistics = IS {
     num_used_arrow_rules :: Int,
     num_used_causes_rules :: Int,
@@ -129,7 +122,6 @@ data InterpretationStatistics = IS {
     num_used_causal_judgements :: Int
 }
 
--- Wat zijn die 'Atom' types? Antwoord: een string, twee identieke strings zijn hetzelfde atom
 data Interpretation = I {
     times :: [Int],
     senses :: [Atom],
@@ -158,7 +150,6 @@ data ClingoResult = CR {
 
 data PredicateType = IsFluent | IsPermanent deriving (Eq, Ord)
 
--- Double map? '.' is function compositionn
 type TypeConceptMap = Map.Map Type [Concept]
 
 -------------------------------------------------------------------------------
@@ -168,16 +159,6 @@ type TypeConceptMap = Map.Map Type [Concept]
 -------------------------------------------------------------------------------
 
 
--- directory naam ++ _ ++ input zonder '.lp'
--- 't' is template. Van daar generate je inits, subs, atoms etc.
--- Betekent dit dat template al gegeven is voor dit programma?
--- wat zegt 'add_const'
-
-
--- bijv. dir = data/misc
--- d = misc
--- input_f = predict_0.lp
--- name = misc_predict_0
 do_template :: Bool -> Template -> String -> String -> IO (String, String, String)
 do_template add_const t dir input_f = do
     let d = drop (length "data/") dir
@@ -190,9 +171,6 @@ do_template add_const t dir input_f = do
     (script, results) <- gen_bash d input add_const t
     return (name, script, results)
 
--- Deze functies schrijven in 'input' bestand. Worden daarna verwerkt door 'gen_bash'
--- 'name' is hier bijv. "misc_predict_1"
--- 'dir'= 'data/misc', input = 'predict_1'
 gen_interpretation :: String -> Template -> IO ()
 gen_interpretation name t = do
     let f = "temp/" ++ name ++ "_interpretation.lp"
@@ -204,7 +182,6 @@ append_new_line :: String -> String -> IO ()
 append_new_line f s = appendFile f (s ++ "\n")
 
 
--- gen_conceptual_rules geeft hardcoded 1 terug. Waarom?
 interpretation_lines :: Template -> [String]
 interpretation_lines t = es ++ ts ++ crs ++ urs ++ cjs ++ cs ++ vs ++ stats where
     es = gen_elements (frame t)
@@ -222,9 +199,6 @@ interpretation_lines t = es ++ ts ++ crs ++ urs ++ cjs ++ cs ++ vs ++ stats wher
         "num_variables(" ++ show (length (vars (frame t))) ++ ")."
         ]
 
--- map met kleine letter m????
--- Hier worden de 'is_concept gemaakt.. maar waar gebruik je ze voor?
--- WAAROM worden hier niet de 'objects' gegenereerd
 gen_elements :: Frame -> [String]
 gen_elements t = [divider, "% Elements", divider, ""] ++ xs where
     xs = cs ++ cs2 ++ ss ++ ts ++ [""]
@@ -238,8 +212,6 @@ gen_elements t = [divider, "% Elements", divider, ""] ++ xs where
     h x = "is_type(" ++ show x ++ ")."
 
 
--- Objects komen als 'permanent(isa(t_number, x))'
--- get_objects is objects . frame
 gen_typing :: Template -> [String]
 gen_typing t = res where
     res = [divider, "% Typing", divider, ""] ++ xs ++ [""] ++ sts ++ [""]
@@ -249,7 +221,7 @@ gen_typing t = res where
     g (t1, t2) = "sub_type(" ++ show t1 ++ ", " ++ show t2 ++ ")."
 
 
--- filter gives all (Concept, [Type]) met precies 2 types en het is geen input-concept. 'elem' is infix elem. 
+-- filter gives all (Concept, [Type]) with exactly 2 types where Concept is not from the input. 'elem' is infix elem. 
 get_binary_concepts :: Frame -> [(Concept, [Type])] -> [(Concept, [Type])]  
 get_binary_concepts frm cs = filter f cs where
     f (c, ts) = length ts == 2 && not (c `elem` input_concepts frm)
@@ -259,10 +231,6 @@ gen_unary_concepts frm =
     gen_unary_concepts2 frm (fluid_concepts frm) Map.empty
 
 
-
--- De bar | betekent functional dependency. Als c in de input-concepts zit, doe je niets!
--- Als c niet in de input-concepts zit, anders zoek je de type(s?) op in de map.
--- Zit het er niet in? Voeg dan t [c] toe! Zit t er wel in, voeg dan 'c' toe aan bestaande concepts van dit type
 gen_unary_concepts2 :: Frame -> [(Concept, [Type])] -> TypeConceptMap -> TypeConceptMap     
 gen_unary_concepts2 _ [] acc = acc
 gen_unary_concepts2 frm ((c, [t]) : xs) acc | c `elem` input_concepts frm = gen_unary_concepts2 frm xs acc
@@ -270,17 +238,13 @@ gen_unary_concepts2 frm ((c, [t]) : xs) acc | otherwise = case Map.lookup t acc 
     Nothing -> gen_unary_concepts2 frm xs (Map.insert t [c] acc)
     Just cs -> gen_unary_concepts2 frm xs (Map.insert t (c:cs) acc)
 
---Deze gebruik je alleen als je concept-type niet de goede vorm heeft volgens mij. Of als je meerdere types hebt!
 gen_unary_concepts2 frm (_ : xs) acc = 
     gen_unary_concepts2 frm xs acc
 
-
--- Die 'gen_bla_2' geeft 'acc' terug. Dat is een dubbele map van Type naar [Concept]. (waarom dubbel?)
 gen_permanent_concepts :: Frame -> Map.Map Type [Concept]
 gen_permanent_concepts frm = 
     gen_permanent_concepts2 frm (permanent_concepts frm) Map.empty
 
---Als permant concept 'Given' is, doe je nietts. Als 'Constructed' voeg je 'c' toe aan de map
 gen_permanent_concepts2 :: Frame -> [(Concept, ConceptLineage, [Type])] -> Map.Map Type [Concept] -> Map.Map Type [Concept]     
 gen_permanent_concepts2 _ [] acc = acc
 gen_permanent_concepts2 frm ((_, Given, _) : xs) acc = 
@@ -291,7 +255,6 @@ gen_permanent_concepts2 frm ((c, Constructed, [t]) : xs) acc = case Map.lookup t
 gen_permanent_concepts2 frm (_ : xs) acc = 
     gen_permanent_concepts2 frm xs acc
 
--- Geeft alleen de 'Constructed' concepts terug
 get_permanent_constructed_concepts :: Frame -> [(Concept, [Type])]
 get_permanent_constructed_concepts t = Maybe.mapMaybe f pcs where
     pcs = permanent_concepts t
@@ -315,7 +278,6 @@ find_var t ((v, t') : _) | t == t' = Just v
 find_var t (_ : vs) = find_var t vs
 
 
--- Elke rule heeft een variable group. Een bounded aantal atoms in body. En een 'arrow head' of 'head causes'
 gen_update_rules :: Template -> Int -> ([String], Int)
 gen_update_rules t n = (h ++ cs ++ arrows ++ causes ++ uses ++ [""],  n3) where
     h = [divider, "% Update rules", divider, ""]
@@ -340,7 +302,6 @@ gen_update_rules t n = (h ++ cs ++ arrows ++ causes ++ uses ++ [""],  n3) where
     uses = ["{ use_rule(R) } :- is_arrow_rule(R).", "{ use_rule(R) } :- is_causes_rule(R)."]
 
 
--- Elke rule heeft een variable group. Een bounded aantal atoms in body. En een 'arrow head' of 'head causes'
 gen_causal_judgements :: Template -> Int -> [String]
 gen_causal_judgements t n = h ++ cs ++ causjudg ++ uses ++ [""] where
     h = [divider, "% Causal Judgements", divider, ""]
@@ -349,8 +310,6 @@ gen_causal_judgements t n = h ++ cs ++ causjudg ++ uses ++ [""] where
     max_hs = show (max_head_atoms t)
     cs = [
         "1 { rule_var_group(R, VG) : is_var_group(VG) } 1 :- is_causal_judgement(R), use_rule(R).",
-        -- "",
-        -- "1 { rule_div3(R, X, Y, Z) : vargroup_div3(VG, X, Y, Z) } 1 :- is_causal_judgement(R), rule_var_group(R, VG).",
         "",
         min_bs ++ " { causal_judgement_body(R, VA) : is_var_atom(VA) } " ++ max_bs ++ " :- is_causal_judgement(R), use_rule(R).", 
         "",
@@ -362,14 +321,11 @@ gen_causal_judgements t n = h ++ cs ++ causjudg ++ uses ++ [""] where
     causjudg = [ fa i | i <- [n .. n + num_causal_judgements t - 1]]
     fa i = "is_causal_judgement(r" ++ show i ++ ")."
     uses = ["{ use_rule(R) } :- is_causal_judgement(R)."]
---    uses = ["{ use_rule(R) } :- is_causal_judgement(R)."]
 
 
 divider :: String
 divider = "%------------------------------------------------------------------------------"
 
--- Use noise is only relevant als 'blind sense' condition... Wat is dit voor condition?
--- Blind sense condition ensures dat als iets gesensed wordt, het ook moet holden.
 gen_constraints :: Template -> [String]
 gen_constraints t = [divider, "% Constraints", divider, ""] ++ c1 ++ c2 where
     c1 = case flag_ablation_remove_kant_condition_blind_sense of
@@ -386,7 +342,6 @@ gen_constraints t = [divider, "% Constraints", divider, ""] ++ c1 ++ c2 where
         False -> []
 
 -- Called before interpretation
--- Alle ground atoms die niet static zijn, zijn 'inits'??
 gen_inits :: String -> Template -> IO ()
 gen_inits name t = do
     let f = "temp/" ++ name ++ "_init.lp"
@@ -403,7 +358,7 @@ print_init_atom :: String -> GroundAtom -> IO ()
 print_init_atom f a = appendFile f t where
     t = "{ " ++ show a ++ " } .\n"
 
---VERANDERD, ZODAT ALLEEN LAATSTE MODEL WORDT GEPRINT
+-- Changed so that only the last model is printed
 gen_bash :: String -> String -> Bool -> Template -> IO (String, String)
 gen_bash dir input_f add_const t = do
     let name = dir ++ "_" ++ input_f
@@ -430,8 +385,6 @@ gen_bash dir input_f add_const t = do
     return (f, results_f)
 
 -- Called before interpretation
--- Dollar teken doet function application. 'function $ input1 ++ input2 ++' etc, (hele lage precedence)
--- \(v,t) betekent: functie (v,t) = do 'blablabla'
 gen_subs :: String -> Template -> IO ()
 gen_subs name t = do
     let f = "temp/" ++ name ++ "_subs.lp"
@@ -444,19 +397,6 @@ gen_subs name t = do
     Monad.forM_ (vars frm) $ \(v, t) -> do
         appendFile f $ "var_type(" ++ show v ++ ", " ++ show t ++ ").\n"
     appendFile f "\n\n"
-    -- appendFile f ("%--------------\n")
-    -- appendFile f ("% vargroup division in 3\n")
-    -- appendFile f ("%--------------\n")
-    -- appendFile f "\n"
-    -- Monad.forM_ (var_groups frm) $ \vg -> do
-    --     let n = var_group_name vg
-    --     Monad.forM_ (my_divide_into_3groups vg) $ \(div1, div2, div3) -> do
-    --         let n1 = var_group_name div1
-    --         let n2 = var_group_name div2
-    --         let n3 = var_group_name div3
-    --         appendFile f ("vargroup_div3(var_group_" ++ n ++ ", var_group_" ++ n1 ++ ", var_group_" ++ n2 ++ ", var_group_" ++ n3 ++").\n")
-    --     appendFile f "\n"
-    -- appendFile f "\n\n"
     appendFile f ("%--------------\n")
     appendFile f ("% contains_var\n")
     appendFile f ("%--------------\n")
@@ -509,9 +449,6 @@ gen_var_atoms name t = do
     Monad.forM_ (all_var_isas frm) (print_var_isa f frm)
     putStrLn $ "Generated " ++ f
 
--- gegeven een varatom VA c xs, (waar xs een lijst van variabelen vallend onder een bepaald type is)
--- Maak je elke vargroup 'die het atom omvat'?
--- Print je: "var_fluent(Show fluent, vargroup)"
 print_var_fluent :: String -> Frame -> VarAtom -> IO ()
 print_var_fluent file t a = Monad.forM_ vgs f where
     f vg = appendFile file (g vg) 
@@ -526,9 +463,6 @@ print_var_isa file t a = Monad.forM_ vgs f where
     vgs = all_var_groups t a 
     h vg = "var_group_" ++ var_group_name vg
 
--- Krijgt atom (VA _ vs) en geeft subset van alle var_groups
--- Zodat alleen de groups waar de vars van dit atom een subset van is 
--- worden opgeschreven
 all_var_groups :: Frame -> VarAtom -> [Vars]
 all_var_groups t (VA _ vs) = filter f (var_groups t) where
     f vs2 = vs `subset` vs2
@@ -538,15 +472,12 @@ all_var_groups t (Isa2 _ v v') = filter f (var_groups t) where
     f vs2 = v `elem` vs2 && v' `elem` vs2 
 
 
---True if all items in 'a' satisfy the function ('elem' b), dus if a subset of b
+--True if all items in 'a' satisfy the function ('elem' b), so if a subset of b
 subset :: (Eq a) => [a] -> [a] -> Bool
 subset a b = all (`elem` b) a
 
 ------------------------------- sub_types -------------------------------------
 
--- map functie(van 1 ding naar 1 ding) input_arrary =output_array
--- Ik neem aan dat dit de elementen in sub_ts steeds in sub_t stopt
--- Of sub_ts bepaalt type van sub_t! Nee hier niet
 sub_types :: Frame -> [(Type, Type)]
 sub_types t = concat (map f (type_hierarchy t)) where
     f (super_t, sub_ts) = [(sub_t, super_t) | sub_t <- sub_ts]
@@ -582,7 +513,7 @@ all_ground_atoms template = res where
     ps = get_permanent_concepts template
     sts = sub_types_star (frame template)
 
--- Mapped alle 'object_tuples' van types in ts. op 'GA concept tuple'
+-- Maps all 'object_tuples' from types in ts to GA concept tuple
     f (c, ts) = map (\xs -> GA c xs) (all_obj_tuples template ts)
     isas = isa1s ++ isa2s
     isa1s = [Perm p [x] | (p, Constructed, [t]) <- ps,
@@ -591,36 +522,29 @@ all_ground_atoms template = res where
         (x, t') <- get_objects template, (t', t) `elem` sts,
         (y, t2') <- get_objects template, (t2', t2) `elem` sts]
 
--- 't : ts' stopt element t vooraan lijst ts 
 all_obj_tuples :: Template -> [Type] -> [[Object]]
 all_obj_tuples _ [] = [[]]
 all_obj_tuples template (t : ts) = res where
 
--- res bevat alle objecten die vallen onder t, plus de objecten die vallen onder de overgebleven ts
+-- res contains all objects under t, plus the objects under the remaining ts
     res = [x : xs | x <- objs, xs <- all_obj_tuples template ts]
 
--- f geeft tuples met objects die vallen onder t, fst pakt de objecten eruit. 
+-- f gives tuples with objects under t 
     objs = map fst (filter f (get_objects template))
     f (_, t') = (t', t) `elem` sts
     sts = sub_types_star (frame template)
 
 ------------------------------- all_var_atoms ---------------------------------
 
--- elke xs is een lijst van variabelen die onder een specifiek subtype vallen
--- VA c xs is dus, voor elke fluid concept in (c,ts), een VA voor elk subconcept van een concept t in ts
-
+-- each xs is a list of variables under a subtype
 all_var_fluents :: Frame -> [VarAtom]
 all_var_fluents t = concat (map f (fluid_concepts t)) where
     f (c, ts) = map (\xs -> VA c xs) (all_var_tuples t ts)
 
--- Voor elk type t, is vs een lijst van alle variabelen van een subtype. 
--- Wordt dat dan in een lijst x gestopt? Oftewel 'all var tuples' geeft een lijst terug van lijsten van variabelen van subtype
--- Nee, volgens mij is het 1 lijst met alle variabelen die vallen onder ts.
 all_var_tuples :: Frame -> [Type] -> [[Var]]
 all_var_tuples _ [] = [[]]
 all_var_tuples frm (t : ts) = res where
     res = [x : xs | x <- vs, xs <- all_var_tuples frm ts]
--- Filter geeft (v,t'), alle vars met subtype. De vars worden dan in lijst gestopt, dat is eerste element van 'all_var_tuples'
     vs = map fst (filter f (vars frm))
     f (_, t') = (t', t) `elem` sub_types_star frm
 
@@ -641,7 +565,7 @@ type SubTypes = [(Type, Type)]
 type Objects = [(Object, Type)]
 
 
--- ADDED ALL SINGLETON SUBSTITUTIONS HERE
+-- Added all singleton substitutions here
 all_subs :: Template -> [SubsGroup]
 all_subs t = res ++ singleton_subs where
     singleton_subs = zip (map var_group_name (single_vars)) (map f single_vgs)
@@ -660,8 +584,8 @@ non_group_singleton_vars frm = filter f singleton_vars where
     g (v,t) = [v]
 
 
--- lookup geeft de rest van tuple (als maybe)
--- Deze functie zoeked de variabelen uit Vars op en stopt de bijbehorende (Var, Type) tuples in de group
+-- lookup gives the rest of tuple
+-- This function searches variables from Vars and puts the associated (Var, Type) tuples in the group
 make_var_group :: VarTypes -> Vars -> TypedVarGroup
 make_var_group types vs = map f vs where
     f v = case lookup v types of
@@ -670,7 +594,7 @@ make_var_group types vs = map f vs where
             error $ "No type found for " ++ show v ++ " in " ++ show types ++ " in var group " ++ show vs
 
 
--- intersperse _ tussen alle elements in y
+-- intersperse _ between all elements in y
 var_group_name :: Vars -> VarGroupName   
 var_group_name g = res  where
     res = concat (List.intersperse "_" y)
@@ -682,14 +606,14 @@ fixed_point f a = case f a == a of
     True -> a
     False -> fixed_point f (f a)
 
--- Subtypes heeft type [(Type, Type)]
+-- Subtypes has type [(Type, Type)]
 -- nub removes duplicates
--- Dit doet 1 transitive stap erbij, combinatie met fixed point geeft closure
+-- This adds 1 transitive step, combination with fixed point gives closure
 trans :: SubTypes -> SubTypes
 trans xs = List.sort (List.nub rs) where
     rs = (xs ++ [(x, y) | (x, z) <- xs, (z', y) <- xs, z == z'])
 
--- Generate alle substitutions van objects voor variables (v,x)
+-- Generate all substitutions of objects for variables (v,x)
 gen2 :: Objects -> SubTypes -> TypedVarGroup -> [Subs]
 gen2 _ _ [] = [[]]
 gen2 objects sub_types ((v,t) : vs) = res where
@@ -703,13 +627,15 @@ is_sub_type sub_types x y = (x,y) `elem` sub_types
 ----------------------------- constraints -------------------------------------
 
 -- Ord is reflexive transitive antisymmetric
--- Geeft elke verdeling in groepen van minimaal 2
--- Dus group_predicates [1,2,3,4] = [[[1,2,3,4]], [[1,2], [3,4]]]
+-- Gives border division in groups of minimum 2
+-- So group_predicates [1,2,3,4] = [[[1,2,3,4]], [[1,2], [3,4]]]
 group_predicates :: Ord a => [a] -> [[[a]]]
 group_predicates xs = filter f (divide_into_groups xs) where
     f y = all g y
     g y = length y >= 2
 
+
+-- Added for geometric logic
 
 my_divide_into_3groups :: Ord a => [a] -> [([a],[a],[a])]
 my_divide_into_3groups xs = List.nub $ my_divide_into_3groups2 xs [([],[],[])]
@@ -720,17 +646,6 @@ my_divide_into_3groups2 (x:xs) acc = acc1 ++ acc2 ++ acc3 where
     acc1 = my_divide_into_3groups2 xs (insert_first x acc)
     acc2 = my_divide_into_3groups2 xs (insert_second x acc)
     acc3 = my_divide_into_3groups2 xs (insert_third x acc)
-
-
--- DEZE HEB IK NOG NIET GESUBSTITUEERD VOOR DE FUNCTIE VAN RICHARD
--- my_divide_into_groups :: Ord a => [a] -> [[a]]
--- my_divide_into_groups xs = List.nub $ my_divide_into_groups2 xs
-
-
--- my_divide_into_groups2 :: Ord a => [a] -> [[a]]
--- my_divide_into_groups2 [] = [[]]
--- my_divide_into_groups2 (x:xs) = (my_divide_into_groups2 xs) ++ map (x:) (my_divide_into_groups2 xs)
-
 
 insert_first :: Ord a => a -> [([a],[a],[a])] -> [([a],[a],[a])]
 insert_first x acc = map f acc where
@@ -752,8 +667,6 @@ divide_into_groups xs = List.nub $ map f ys where
     f y = List.reverse (map g y)
     g y = List.reverse y
 
---  Dit verdeelt de variabelen in [a] in een list van verdelingen. MAAR er worden alleen lijnen getrokken in de bestaande volgorder
--- Bijvoorbeeld: input [x,y,z] geeft geen group met [[y], [x,z]].
 divide_into_groups2 :: Ord a => [a] -> [[[a]]] -> [[[a]]]
 divide_into_groups2 [] acc = acc
 divide_into_groups2 (x:xs) acc = a ++ b where
@@ -762,15 +675,11 @@ divide_into_groups2 (x:xs) acc = a ++ b where
     acc2 = insert_in_last_list x acc
     acc3 = make_new_list x acc
 
--- Als element in gs is empty, stop je [[x]] in de plaats
--- Als element in gs een list is [y|ys], (dus bijv [[a,b], [bla], [bla]]) Dan -> voeg je x toe aan de eerste lijst
--- Dus, gs is [[[]]], en in elk element [[]] van gs wordt x in de eerste list [] gestopt
 insert_in_last_list :: Ord a => a -> [[[a]]] -> [[[a]]]
 insert_in_last_list x gs = map f gs where
     f [] = [[x]]
     f (y:ys) = (x: y) : ys 
 
--- Hier wordt een nieuwe list [x] gemaakt in elk element van g
 make_new_list :: Ord a => a -> [[[a]]] -> [[[a]]]
 make_new_list x gs = map f gs where
     f [] = [[x]]
@@ -785,17 +694,6 @@ gen_xor_constraints frm = c_cs ++ c_ps where
     f k (t, cs) = gen_xor_constraints_for_type k t (List.sort cs) 
 
 
--- Predicate type (IsFluent of IsPermanent), concept type en concepts
--- Concepts worden verdeeld in groepen (maar dus niet op elke manier!! alleen door lijnen te trekken in bestaande volgorde)
--- Choose xor group
--- 1{bla bla lengte aantal groep-verdelingen van de concepten}1
--- 
--- Concept Hierarchy
--- sub_concept(concept_1, type).
--- sub_concept(concept_2, typet). etc.
---
--- 'gen_xor_constraints_for_group'??
-
 gen_xor_constraints_for_type :: PredicateType -> Type -> [Concept] -> [String]
 gen_xor_constraints_for_type k t ps = r where
     r = h1 : cgs : "" : scs ++ concat (map (gen_xor_constraints_for_group k t) zs)
@@ -803,15 +701,11 @@ gen_xor_constraints_for_type k t ps = r where
     cgs = choose_group k t (length gs)
     gs = group_predicates ps
 
--- zs geeft voor elke verdeling een string met een choice rule...???
--- [(1{xor_bla_1}1, [[1,2,3,4]]), (1{xor_bla_2}1, [[1,2],[3,4]])]
--- Dit lijkt niet echt zinnig...
     zs = zip (map (group_id k t) [1..]) gs
     scs = h2 : map f ps ++ [""]
     h2 = "% Concept hierarchy"
     f p = "sub_concept(" ++ show p ++ ", " ++ show t ++ ")."
 
--- Geeft XOR constraint van "xor_IsFluent_t_1; xor_IsFluent_t_2" etcetera. Van de lengte van het aantal verdelingen
 choose_group :: PredicateType -> Type -> Int -> String
 choose_group k t n = "1 { " ++ m ++ " } 1." where
     m = concat (List.intersperse "; " (map (group_id k t) [1..n]))
@@ -820,14 +714,11 @@ group_id :: PredicateType -> Type -> Int -> String
 group_id k t i = "xor_" ++ show k ++ "_" ++ drop 2 (show t) ++ "_" ++ show i
 
 
--- Maakt een XOR constraint voor bijv. 'IsFluent', 
 gen_xor_constraints_for_group :: PredicateType -> Type -> (String, [[Concept]]) -> [String]
 gen_xor_constraints_for_group k t (g, pss) = r where
     r = concat (map (gen_xor_constraints_for_predicates k t g) pss)
 
 
--- pss is bijv [[1,2],[3,4]]
--- Dus Voor elke subgroup (i.e. [1,2]) wordt 'at most one', 'at least one' en 'incompossible(1,2)' geschreven
 gen_xor_constraints_for_predicates :: PredicateType -> Type -> String -> [Concept] -> [String]    
 gen_xor_constraints_for_predicates k t g ps = r where
     r = at_most ++ at_least ++ incompossibles ++ output
@@ -843,12 +734,6 @@ gen_xor_constraints_for_predicates k t g ps = r where
     output = gen_output g ps
     
 
-
--- % Readable exclusion
--- exclusion_output("c_gen_1+c_gen_2") :-
---    xor_fluent_sensor_1.
-
--- Wat doet deze clause?
 gen_output :: String -> [Concept] -> [String]
 gen_output g ps = [h, l1, l2, ""] where
     h = "% Readable exclusion" 
@@ -877,7 +762,7 @@ gen_incompatible_unary_predicates k t g (p1, p2) = [l1, l2, l3] where
     l2 = "\t" ++ g ++ "."
     l3 = ""
 
--- Per paar
+-- Per pair
 gen_incompossibles :: PredicateType -> Type -> String -> (Concept, Concept) -> [String]
 gen_incompossibles k t g (p1, p2) = [l1, l2, l3, l4] where
     l1 = "incompossible(" ++ gen_sentence k p1 ++ ", " ++ gen_sentence k p2 ++ ") :-"
@@ -902,10 +787,6 @@ gen_sentence2 IsFluent p v1 v2 = "s2(" ++ show p ++ ", " ++ v1 ++ ", " ++ v2 ++ 
 gen_sentence2 IsPermanent p v1 v2 = "isa2(" ++ show p ++ ", " ++ v1 ++ ", " ++ v2 ++ ")"
 
 
--- Alleen de fluid en constructed permanent concepts in exists constraint, dus niet de given permanents
--- Alleen de binary concepts worden gepakt (dus [ts]=2 en geen input concept)
--- Voor die concepts maak je "sub_concept(concept, type)", waar type de eerste van ts is (??)
--- Zijn de types wellicht al geordend op type-hierarchy ofzo?? Dat deze ene statement genoeg is.
 gen_exists_constraints :: Frame -> [String]
 gen_exists_constraints frm = c_cs ++ c_ps where
     cs = get_binary_concepts frm (fluid_concepts frm)
@@ -924,8 +805,6 @@ gen_exists_constraints_for_pred k (c, ts) = r where
     at_least = gen_exists_at_least k (c, ts)
     incompossible = gen_exists_incompossible k (c, ts)
 
--- Generate atoms van dit concept, en zeg: er is precies 1 object waar dit voor geldt (1Y s.t. holds(s2(concept, X,Y),T))
--- Met ook weer incompossible(holds(s2(concept, X,Y), holds(s2(concept, X, Y2))))
 gen_exists_at_most :: PredicateType -> (Concept, [Type]) -> [String]    
 gen_exists_at_most k (c, _) = [h, ":-", l1, l2, l3, ""] where
     h = "% " ++ exists_string ++ "! clause for " ++ show c ++ " : at most one"
@@ -955,9 +834,6 @@ gen_exists_incompossible k (c, [t1, t2]) = [h, l1, l2, l3, l4, l5, ""] where
     l4 = "\tpermanent(isa(" ++ show t2 ++ ", Y2)),"
     l5 = "\tY != Y2."
 
--- DUS de xor en exists constraints zijn de uiting van 'conceptual unity'. Dit was volgens Evans de 'overkoepelende disjunctie'
--- DUS de constraints in ASP maken heel mooi gebruik van de structuur van Kantiaanse judgements (i.e. disjunctie als variable ranging over body)
--- Maar de geleerde regels zelf (in datalog) doen dit niet
 gen_conceptual_rules :: Template -> ([String], Int)
 gen_conceptual_rules t | flag_ablation_remove_kant_condition_conceptual_unity == True = (["", "% [Ignoring Kantian condition of conceptual unity]", ""], 1)
 gen_conceptual_rules t | flag_ablation_remove_kant_condition_conceptual_unity == False = res where
@@ -977,9 +853,6 @@ xor_groups frm = xs ++ ys where
     ps = Map.toList (gen_permanent_concepts frm)
     f k (t, cs) = xor_group k t (List.sort cs) 
 
--- Wat doet dit....
--- Je hebt alle concepts van een bepaald type in ps. Hier maak je alle (bar-)verdelingen van.
--- Vervolgens zip je elke verdeling aan een group_id '1{xor_bla_2}1' en de id's geef je terug
 xor_group :: PredicateType -> Type -> [Concept] -> [String]
 xor_group k t ps = map fst zs where
     zs = zip (map (group_id k t) [1..]) gs
@@ -988,7 +861,6 @@ xor_group k t ps = map fst zs where
 num_xor_groups :: Frame -> Int
 num_xor_groups frm = length (sequence (xor_groups frm))
 
--- Dus: 1{xor_bla_2}1 :- xor_group(2).
 xor_groups_strings :: Frame -> [String]
 xor_groups_strings frm = h ++ r where
     r = concat (map f (zip [1..] s))
@@ -1000,7 +872,6 @@ xor_groups_strings frm = h ++ r where
 xor_group_file_name :: String
 xor_group_file_name = "temp/gen_xor_groups.lp"
 
--- Deze wordt bij mij nog niet gemaakt... wat triggered dit?
 gen_xor_groups :: Template -> IO ()
 gen_xor_groups t = do
     let f = xor_group_file_name
@@ -1013,8 +884,6 @@ gen_xor_groups t = do
 -- This block of code parses clingo's results.
 -- 
 -------------------------------------------------------------------------------
-
--- PARSE, maar waar wordt clingo aangeroeppen??
 
 opt = "Optimization: "
 
@@ -1034,11 +903,7 @@ show_answer_set = False
 show_extraction :: Bool
 show_extraction = True
 
---unlines places new-line between each elmement of string-array, en geeft 1 string terug
--- words verdeelt een string met whitespace in elementen van een list
--- wibble?
--- Als 'show_answer_sets' geven we alles in 'clingooutput' terug.
--- Als 'show_extraction' geven we een overzichtelijk model terug
+--unlines places new-line between each elmement of string-array, and gives 1 string back
 process_answer_with_template :: Template -> ClingoOutput -> String    
 process_answer_with_template t (Answer l) = unlines (res1 ++ res2) where
     res1 = [h,x,h,""] ++ if show_answer_set then xs else []
@@ -1229,9 +1094,7 @@ extract_times = extract_atoms "is_time("
 extract_senses = extract_atoms "senses("
 extract_hiddens = extract_atoms "hidden("
 
--- Bijvoorbeeld p="used_causes_rule("
--- Dat haal je van x af, en vervolgens haal je ")" van het einde
--- Stuk binnen de haakjes blijft over
+-- Bits between parentheses remain
 extract_atoms :: String -> [String] -> [Atom]
 extract_atoms p xs = Maybe.mapMaybe f xs where
     f x = case List.isPrefixOf p x of
@@ -1252,7 +1115,7 @@ extract_permanents xs = Maybe.mapMaybe f xs where
         False -> Nothing
         True -> Just $ drop_last (List.drop (length p) x)
 
--- WEGGEHAALD
+-- Changed
 extract_rules :: [String] -> [Rule]
 -- extract_rules xs = extract_xors xs ++ extract_arrows xs ++ extract_causes xs
 extract_rules xs = extract_xors xs ++ extract_arrows xs ++ extract_causes xs ++ extract_causal_judgements xs
@@ -1270,12 +1133,6 @@ extract_causes :: [String] -> [Rule]
 extract_causes xs = map f (extract_cause_heads xs) where
     f (r, c) = Causes r (extract_body xs r) c
 
--- VAN Mij o.b.v. Evans
--- extract_causal_judgements :: [String] -> [Rule]
--- extract_causal_judgements xs = map f (extract_causal_judgement_heads xs) where
---     f (r, c) = Causal_judgement r (extract_causal_judgement_body xs r) (extract_choose_vars xs r) c
-
-
 extract_causal_judgement_body :: [String] -> RuleID -> [Atom]
 extract_causal_judgement_body xs r = Maybe.mapMaybe f xs where
     f x = case List.isPrefixOf p x of
@@ -1284,7 +1141,8 @@ extract_causal_judgement_body xs r = Maybe.mapMaybe f xs where
     p = "causal_judgement_body(" ++ r ++ ","
 
 
--- NIEUW VAN MIJ
+-- New clauses for geometric logic:
+
 extract_causal_judgements :: [String] -> [Rule]
 extract_causal_judgements xs = map f (List.nub(extract_causal_judgement_numbers xs)) where
     f (r) = Causal_judgement r (extract_causal_judgement_body xs r) (extract_choose_vars xs r) cs where
@@ -1307,21 +1165,6 @@ extract_causal_judgement_heads_for_number xs r = Maybe.mapMaybe f xs where
         True -> Just $ drop_last (List.drop(length p) x)
     
 
--- groupTuples :: ([(RuleID, Atom)]) -> [(RuleID, [Atom])]
--- groupTuples tuples = grouped
---     where grouped = Map.toList $ Map.fromListWith (++) [(k, [v]) | (k, v) <- tuples]
-
-
--- NOTE I HARDCODED THAT I ONLY SELECT FIRST 'rule_div3' WITH THE RIGHT ID... NOT VERY ROBUST
--- extract_choose_vars :: [String] -> RuleID -> String
--- extract_choose_vars xs r = List.head list where
---     list = Maybe.mapMaybe f xs
---     p = "rule_div3("++ r ++ ","
---     f x = case List.isPrefixOf p x of
---         False -> Nothing
---         True -> Just $ select_third_vargroup (drop_last (List.drop (length p) x))
-
--- NIEUW EXPERIMENT ZONDER DIV3
 extract_choose_vars :: [String] -> RuleID -> String
 extract_choose_vars xs r = List.concat list where
     list = Maybe.mapMaybe f xs
@@ -1331,14 +1174,10 @@ extract_choose_vars xs r = List.concat list where
         True -> Just $ " " ++ drop_last (List.drop (length p) x) ++ " "
 
 
-
 select_third_vargroup :: String -> String
 select_third_vargroup groups = Text.unpack second_text where
     second_text = text_list!!1
     text_list = Text.splitOn (Text.pack ",") (Text.pack groups)
-
--- IK MOET NOG DE CONSTRUCTOR IN CAUSAL JUDGEMENT voor INTERPRETATION AANPASSEN, EN DAN KIJKEN NAAR DE 'show' functie
-
 
 
 extract_xor_heads :: [String] -> [(RuleID, [Atom])]
@@ -1367,7 +1206,6 @@ extract_arrow_heads xs = Maybe.mapMaybe f xs where
 bimble_split :: String -> Char -> [String]
 bimble_split s c = bimble_split2 s c ""
 
--- Skip de character 'c' in de string. Voeg de andere characters toe in een lijst, elke string voor en na de comma is een element
 bimble_split2 :: String -> Char -> String -> [String]
 bimble_split2 "" _  acc = [acc]
 bimble_split2 (x:xs) c acc | x == c = acc : bimble_split2 xs c ""
@@ -1386,7 +1224,6 @@ extract_cause_heads xs = Maybe.mapMaybe f xs where
         True -> Just $ 
             extract_cause_pair (drop_last (List.drop (length p) x))
 
--- Note dat ik hier dezelfde 'cause pair' gebruik die al voor Causal update rule bestond
 extract_causal_judgement_heads :: [String] -> [(RuleID, Atom)]
 extract_causal_judgement_heads xs = Maybe.mapMaybe f xs where
     p = "causal_judgement_head("
@@ -1394,7 +1231,6 @@ extract_causal_judgement_heads xs = Maybe.mapMaybe f xs where
         False -> Nothing
         True -> Just $ 
             extract_cause_pair (drop_last (List.drop (length p) x))
-
 
 
 extract_body :: [String] -> RuleID -> [Atom]
@@ -1409,7 +1245,6 @@ extract_cause_pair x = (r, xs2) where
     r:xs = bimble_split x ','
     xs2 = concat (List.intersperse ", " xs)
 
--- Laatste element er af
 drop_last :: [a] -> [a]        
 drop_last x = reverse (List.drop 1 (reverse x))
 
@@ -1460,13 +1295,6 @@ causes_string = if flag_unicode then " ▸ " else " >> "
 xor_string :: String
 xor_string = if flag_unicode then " ⊕ " else " + " 
 
--- write_exist :: String -> String
--- write_exist choose = f choose where
---     f x = case x == p of
---         True -> ""
---         False -> exists_string ++ " " ++ drop (length p) choose ++ "  "
---     p = "var_group_"
-
 
 write_exist :: String -> String
 write_exist choose = f choose where
@@ -1474,17 +1302,10 @@ write_exist choose = f choose where
         True -> ""
         False -> exists_string ++ x
 
-    --     " " ++ drop (length p) choose ++ "  "
-    -- p = "var_group_"
-
-
-
--- HIER 'write_exist' vervangen voor gewoon de string.
 instance Show Rule where
     show (Arrow r bs h) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ arrow_string ++ h
     show (Causes r bs c) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ causes_string ++ c
     show (Xor r bs hs) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ arrow_string ++ concat (List.intersperse xor_string hs)
-    -- show (Causal_judgement r bs choose h) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ causes_string ++ write_exist choose ++ h
     show (Causal_judgement r bs choose hs) = r ++ " : " ++ concat (List.intersperse and_string bs) ++ causes_string ++ write_exist choose ++ concat (List.intersperse and_string hs)
 
 -- We only want to display the optimum answer, not the earlier ones.

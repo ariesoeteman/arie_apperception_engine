@@ -17,29 +17,24 @@
 :~ gen_permanent(A). [1 @ 2, A]
 
 
+%%
+%% Clauses below are added for geometric logic
+%%
 
-%% ADDED BY ME
+:~ causal_judgement_body(R, A). [1 @ 2, R, A, 1]
 
-:~ causal_judgement_body(R, A). [1 @ 2, R, A]
-
-:~ causal_judgement_head(R, A). [1 @ 2, R, A]
-
-% :~ causal_judgement_body(R, A). [1 @ 2, R, A]
-
-% :~ causal_judgement_head(R, A). [1 @ 1, R, A]
+:~ causal_judgement_head(R, A). [1 @ 2, R, A, 2]
 
 
-% OF alleen extra minimization op de regels waar een existential in zit
+% extra minimization on rules that contain an existential
 :~ causal_judgement_head(R, A), rule_tochoose(R,_). [1 @ 1, R, A]
 
-% :~ incorrect_valuation(R, A). [1 @ 2, R, A]
-
-% :~ minimum_number_of_choices(GA, T, C). [C @ 3, GA, T]
-
-% sum_choice_domains(S) :- S = #sum { C, GA, T : minimum_number_of_choices(GA, T, C)}.
 
 #minimize {C @ 3, GA, T : minimum_number_of_choices(GA, T, C), C != #sup}.
-% #show minimum_number_of_choices/3.
+
+%%
+%% Until here
+%%
 
 %------------------------------------------------------------------------------
 % Forcing atoms to be true is the same cost as initial atoms.
