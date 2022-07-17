@@ -1,4 +1,6 @@
-# The source code for chapter 3 of my thesis "Aritificial Understanding"
+# The source code for chapter 3 of my thesis: "Aritificial Understanding"
+
+The larger part of the code is a direct copy of https://github.com/RichardEvans/apperception. All additions concern the implementation of 'causal judgements', that harness the full expressive power of geometric logic.
 
 ## Installation instructions
 
