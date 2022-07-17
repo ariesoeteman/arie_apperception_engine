@@ -45,15 +45,15 @@ See https://github.com/RichardEvans/apperception for a list of more complex exam
 Now to make use of existential quantification in the head of judgements you can try the following examples:
 
 A simple counting sequence:
-   * '~/.cabal/bin/mysolve cj heating_2.lp'
+   * `~/.cabal/bin/mysolve cj heating_2.lp`
 
 
 A simple example in which conjunction of atoms in the head is helpful:
-   * '~/.cabal/bin/mysolve cj conjunction_1.lp'
+   * `~/.cabal/bin/mysolve cj conjunction_1.lp`
 
 
 The final example of chapter 3 (this takes about 2 hours) :
-   * '~/.cabal/bin/mysolve cj heating_1.lp'
+   * `~/.cabal/bin/mysolve cj heating_1.lp`
 
 In general, mysolve can be run with any file in the data directory. All examples added by me are in the data/causal_judgement folder.
 
