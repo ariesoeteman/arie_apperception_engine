@@ -26,7 +26,7 @@ Once you have Haskell and Clingo installed, just run (from the root directory):
 
 Once the system is installed (see above), you are ready to try some examples developed for the original Apperception Engine by Richard Evans:
 
-To run these examples, **make sure you are in the root directory called apperception**.
+To run these examples, **make sure you are in the root directory called geometric_apperception**.
 
 A single sensor oscillating between on and off:
    * `~/.cabal/bin/mysolve misc predict_1.lp`
